@@ -47,12 +47,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onOpenSettings,
 }) => {
   const { currentPage, totalPages, nextPage, prevPage } = useBookStore();
-  const { currentBook } = useBookmarkStore((state) => ({
-    currentBook: state.getBookmarks(useBookStore.getState().currentBook?.id ?? '').length > 0
-      ? state.getBookmarks(useBookStore.getState().currentBook?.id ?? '')
-      : [],
-  }));
-  const { addBookmark, removeBookmark, getBookmarks } = useBookmarkStore();
+  const { addBookmark, removeBookmark } = useBookmarkStore();
   const { nightMode } = useSettingsStore();
 
   const [showModeSelector, setShowModeSelector] = useState(false);
@@ -82,7 +77,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       addBookmark({
         bookId,
         pageNumber: currentPage,
-        title: `Page ${currentPage + 1}`,
+        title: `第 ${currentPage + 1} 页`,
       });
     }
   };
