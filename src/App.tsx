@@ -8,8 +8,10 @@ import ChapterList from './components/Reader/ChapterList';
 import BookmarkPanel from './components/Reader/BookmarkPanel';
 import SearchPanel from './components/Reader/SearchPanel';
 import Bookshelf from './components/Reader/Bookshelf';
+import OnboardingGuide from './components/Reader/OnboardingGuide';
 import { useBookParser } from './hooks/useBookParser';
 import usePagination from './hooks/usePagination';
+import { useOnboarding } from './hooks/useOnboarding';
 import { useBookStore } from './stores/bookStore';
 import { useSettingsStore } from './stores/settingsStore';
 
@@ -28,6 +30,17 @@ function App() {
   const [chapterListOpen, setChapterListOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [bookmarkPanelOpen, setBookmarkPanelOpen] = useState(false);
+
+  /* ---- Onboarding ---- */
+  const {
+    showGuide,
+    currentStep,
+    totalSteps,
+    nextStep,
+    prevStep,
+    skipGuide,
+    completeGuide,
+  } = useOnboarding();
 
   /* ---- Core hooks ---- */
   const { book, chapters, loadFile } = useBookParser();
@@ -107,7 +120,20 @@ function App() {
       await loadFile(buffer, file.name, '', pageConfig);
     };
 
-    return <Bookshelf onOpenBook={handleOpenBook} onImportBook={handleImportBook} />;
+    return (
+      <>
+        <Bookshelf onOpenBook={handleOpenBook} onImportBook={handleImportBook} />
+        <OnboardingGuide
+          isOpen={showGuide}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onNext={nextStep}
+          onPrev={prevStep}
+          onSkip={skipGuide}
+          onComplete={completeGuide}
+        />
+      </>
+    );
   }
 
   /* ================================================================
@@ -174,6 +200,17 @@ function App() {
       <SearchPanel
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
+      />
+
+      {/* ---- Onboarding Guide ---- */}
+      <OnboardingGuide
+        isOpen={showGuide}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        onNext={nextStep}
+        onPrev={prevStep}
+        onSkip={skipGuide}
+        onComplete={completeGuide}
       />
     </div>
   );
