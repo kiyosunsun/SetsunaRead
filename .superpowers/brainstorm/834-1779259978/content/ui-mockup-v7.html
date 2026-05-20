@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SetsunaRead UI Mockup v7</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Serif SC', 'SimSun', serif;
+    background: #3a3a3a;
+    color: #fff;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Left Toolbar */
+  .toolbar-left {
+    width: 48px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #222 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 4px;
+    z-index: 10;
+  }
+  .tool-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px; border: none;
+    background: transparent; color: #888;
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .tool-btn:hover { background: #333; color: #fff; }
+  .tool-btn.active {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.3);
+  }
+  .toolbar-divider { width: 24px; height: 1px; background: #444; margin: 8px 0; }
+
+  /* Main */
+  .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .header {
+    height: 32px; background: #1e1e1e;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; border-bottom: 1px solid #333;
+  }
+  .header .book-title { font-size: 12px; color: #aaa; font-family: 'Microsoft YaHei', sans-serif; }
+  .header .chapter-info { font-size: 11px; color: #666; font-family: 'Microsoft YaHei', sans-serif; }
+  .window-controls { display: flex; gap: 8px; }
+  .window-controls span { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+  .btn-minimize { background: #fbbf24; }
+  .btn-maximize { background: #4ade80; }
+  .btn-close { background: #f87711; }
+
+  /* Book Container */
+  .book-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #3a3a3a;
+    position: relative;
+  }
+
+  /* ========== 3D Book ========== */
+  .book-3d {
+    position: relative;
+    transform: perspective(2000px) rotateX(2deg);
+    transform-style: preserve-3d;
+  }
+
+  /* Book shadow on the "desk" */
+  .book-shadow {
+    position: absolute;
+    bottom: -20px;
+    left: 5%;
+    right: 5%;
+    height: 30px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.35) 0%, transparent 70%);
+    filter: blur(8px);
+  }
+
+  /* Book pages container */
+  .book-pages {
+    display: flex;
+    position: relative;
+    box-shadow:
+      0 4px 20px rgba(0,0,0,0.3),
+      0 1px 4px rgba(0,0,0,0.2);
+  }
+
+  /* ========== Left Page ========== */
+  .page-left {
+    width: 46vw;
+    max-width: 500px;
+    height: 82vh;
+    max-height: 680px;
+    padding: 50px 55px;
+    background: linear-gradient(90deg, #ede8dc 0%, #f2ede2 70%, #f5f0e8 100%);
+    position: relative;
+    font-size: 15px;
+    line-height: 2;
+    color: #333;
+    text-align: justify;
+    /* Slight lift on the left edge */
+    transform: perspective(800px) rotateY(1.5deg);
+    transform-origin: right center;
+    box-shadow:
+      inset -8px 0 16px -8px rgba(0,0,0,0.04),
+      -2px 0 8px rgba(0,0,0,0.1);
+  }
+
+  /* ========== Right Page with curl ========== */
+  .page-right {
+    width: 46vw;
+    max-width: 500px;
+    height: 82vh;
+    max-height: 680px;
+    padding: 50px 55px;
+    background: linear-gradient(270deg, #e8e3d6 0%, #f0ebe0 30%, #f5f0e8 100%);
+    position: relative;
+    font-size: 15px;
+    line-height: 2;
+    color: #333;
+    text-align: justify;
+    transform: perspective(800px) rotateY(-1.5deg);
+    transform-origin: left center;
+    box-shadow:
+      inset 8px 0 16px -8px rgba(0,0,0,0.04),
+      2px 0 8px rgba(0,0,0,0.1);
+    overflow: visible;
+  }
+
+  /* ========== Page Curl Effect ========== */
+  .page-curl {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80px;
+    height: 80px;
+    overflow: hidden;
+    z-index: 5;
+  }
+
+  .page-curl::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 80px 80px 0;
+    border-color: transparent #3a3a3a transparent transparent;
+    /* The "desk" color showing through the curl */
+  }
+
+  .page-curl::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 0 76px 76px 0;
+    border-color: transparent #f5f0e8 transparent transparent;
+    /* The curled page underside */
+    filter: brightness(0.92);
+  }
+
+  /* Curl shadow */
+  .page-curl-shadow {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 70px;
+    height: 70px;
+    background: radial-gradient(ellipse at top right, rgba(0,0,0,0.15) 0%, transparent 70%);
+    transform: rotate(45deg);
+    z-index: 4;
+  }
+
+  /* ========== Book Spine ========== */
+  .book-spine {
+    width: 30px;
+    background: linear-gradient(90deg,
+      rgba(0,0,0,0.18) 0%,
+      rgba(0,0,0,0.08) 30%,
+      rgba(255,255,255,0.05) 50%,
+      rgba(0,0,0,0.08) 70%,
+      rgba(0,0,0,0.18) 100%
+    );
+    position: relative;
+  }
+
+  /* Central crease line */
+  .book-spine::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 8px;
+    bottom: 8px;
+    width: 1px;
+    background: rgba(0,0,0,0.1);
+    transform: translateX(-50%);
+  }
+
+  /* ========== Page Corner Ornaments ========== */
+  .ornament {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    pointer-events: none;
+    opacity: 0.2;
+  }
+
+  /* Ornament SVG-style using borders */
+  .ornament-tl {
+    top: 18px; left: 18px;
+  }
+  .ornament-tl::before, .ornament-tl::after {
+    content: '';
+    position: absolute;
+  }
+  .ornament-tl::before {
+    top: 0; left: 0;
+    width: 30px; height: 30px;
+    border-top: 2px solid #8b7355;
+    border-left: 2px solid #8b7355;
+  }
+  .ornament-tl::after {
+    top: 6px; left: 6px;
+    width: 18px; height: 18px;
+    border-top: 1px solid #8b7355;
+    border-left: 1px solid #8b7355;
+  }
+
+  .ornament-br {
+    bottom: 18px; right: 18px;
+  }
+  .ornament-br::before, .ornament-br::after {
+    content: '';
+    position: absolute;
+  }
+  .ornament-br::before {
+    bottom: 0; right: 0;
+    width: 30px; height: 30px;
+    border-bottom: 2px solid #8b7355;
+    border-right: 2px solid #8b7355;
+  }
+  .ornament-br::after {
+    bottom: 6px; right: 6px;
+    width: 18px; height: 18px;
+    border-bottom: 1px solid #8b7355;
+    border-right: 1px solid #8b7355;
+  }
+
+  .ornament-tr {
+    top: 18px; right: 18px;
+  }
+  .ornament-tr::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 30px; height: 30px;
+    border-top: 2px solid #8b7355;
+    border-right: 2px solid #8b7355;
+  }
+
+  .ornament-bl {
+    bottom: 18px; left: 18px;
+  }
+  .ornament-bl::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 30px; height: 30px;
+    border-bottom: 2px solid #8b7355;
+    border-left: 2px solid #8b7355;
+  }
+
+  .page p { text-indent: 2em; margin-bottom: 0.4em; }
+
+  .page-number {
+    position: absolute;
+    bottom: 24px;
+    font-size: 13px;
+    color: #aaa;
+    font-family: 'Georgia', serif;
+  }
+  .page-left .page-number { left: 55px; }
+  .page-right .page-number { right: 55px; }
+
+  .highlight-yellow {
+    background: linear-gradient(180deg, transparent 55%, rgba(250,204,21,0.35) 55%);
+    padding: 0 2px;
+  }
+
+  /* ========== Yellow Bookmark Tab - 从右侧边缘伸出 ========== */
+  .bookmark-tab {
+    position: absolute;
+    right: -14px;
+    top: 30px;
+    width: 28px;
+    height: 80px;
+    background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+    border-radius: 0 6px 6px 0;
+    cursor: pointer;
+    z-index: 20;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+  }
+
+  .bookmark-tab:hover {
+    right: -10px;
+    box-shadow: 4px 2px 12px rgba(0,0,0,0.4);
+  }
+
+  /* Fold effect on the tab */
+  .bookmark-tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.15), transparent);
+    border-radius: 0 6px 0 0;
+  }
+
+  .bookmark-tab-text {
+    writing-mode: vertical-rl;
+    color: white;
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+
+  /* ========== Bookmark Popup Card ========== */
+  .bookmark-popup {
+    position: absolute;
+    top: 50%;
+    right: calc(50% - 380px);
+    transform: translateY(-50%);
+    width: 200px;
+    background: #111;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    z-index: 30;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  .bookmark-popup.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(-50%) scale(1);
+  }
+
+  .popup-image {
+    width: 100%;
+    height: 150px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .popup-image::before {
+    content: '';
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+    top: -50px;
+    right: -30px;
+  }
+
+  .popup-image .butterfly {
+    font-size: 60px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+  }
+
+  .popup-content {
+    padding: 16px;
+  }
+
+  .popup-quote {
+    font-size: 12px;
+    color: #ccc;
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .popup-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #333;
+  }
+
+  .brand-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .brand-name { font-size: 14px; color: #fff; font-weight: 600; font-family: 'Georgia', serif; }
+  .brand-sub { font-size: 9px; color: #888; font-family: 'Microsoft YaHei', sans-serif; }
+
+  /* Book edge (thickness) */
+  .book-edge {
+    position: absolute;
+    right: -16px;
+    top: 4px;
+    bottom: 4px;
+    width: 16px;
+    background: linear-gradient(90deg, #c4b8a8, #d4c8b8 30%, #c9bda8 50%, #bfaf98 70%, #a89880);
+    border-radius: 0 4px 4px 0;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+  }
+  .book-edge::before {
+    content: '';
+    position: absolute;
+    left: 2px; top: 6px; bottom: 6px; right: 1px;
+    background: repeating-linear-gradient(180deg, #e8e0d4 0px, #e8e0d4 1px, #ddd5c8 1px, #ddd5c8 2px);
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    height: 40px; background: #1a1a1a;
+    border-top: 1px solid #333;
+    display: flex; align-items: center;
+    padding: 0 20px; gap: 16px;
+  }
+  .progress-container { flex: 1; display: flex; align-items: center; gap: 12px; }
+  .progress-text { font-size: 11px; color: #888; font-family: 'Microsoft YaHei', sans-serif; }
+  .progress-bar { flex: 1; height: 3px; background: #333; border-radius: 2px; position: relative; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24); border-radius: 2px; width: 45%; }
+  .progress-fill::after { content: ''; position: absolute; right: -5px; top: -3.5px; width: 10px; height: 10px; background: #fbbf24; border-radius: 50%; box-shadow: 0 0 6px rgba(245,158,11,0.4); }
+  .page-nav { font-size: 11px; color: #666; font-family: 'Microsoft YaHei', sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- Left Toolbar -->
+<div class="toolbar-left">
+  <button class="tool-btn active">📑</button>
+  <button class="tool-btn" onclick="document.querySelector('.bookmark-popup').classList.toggle('show')">🔖</button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">✏️</button>
+  <button class="tool-btn">🔍</button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">🌙</button>
+  <button class="tool-btn">⚙️</button>
+  <div style="flex:1"></div>
+  <button class="tool-btn">📖</button>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="header">
+    <span class="book-title">边城</span>
+    <span class="chapter-info">第一章</span>
+    <div class="window-controls">
+      <span class="btn-minimize"></span>
+      <span class="btn-maximize"></span>
+      <span class="btn-close"></span>
+    </div>
+  </div>
+
+  <div class="book-container">
+    <div class="book-3d">
+
+      <!-- Book Shadow -->
+      <div class="book-shadow"></div>
+
+      <!-- Bookmark Popup -->
+      <div class="bookmark-popup" onclick="this.classList.remove('show')">
+        <div class="popup-image">
+          <span class="butterfly">🦋</span>
+        </div>
+        <div class="popup-content">
+          <div class="popup-quote">谁的有着我有的思想，把你我彼此共同分享</div>
+          <div class="popup-brand">
+            <div class="brand-icon">📖</div>
+            <div>
+              <div class="brand-name">SetsunaRead</div>
+              <div class="brand-sub">本地阅读</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Book Pages -->
+      <div class="book-pages">
+
+        <!-- Left Page -->
+        <div class="page page-left">
+          <div class="ornament ornament-tl"></div>
+          <div class="ornament ornament-bl"></div>
+          <p>但不成，凡事求个心安理得，出气力不受酬谁好意思，不管如何还是有人把钱的。管船人却情不过，也为了心安起见，便把这些钱托人到茶峒去买茶叶和草烟，将茶峒出产的上等草烟，一扎一扎挂在自己腰带边，过渡的谁需要这东西必慷慨奉赠。</p>
+          <p>有时从神气上估计那远路人对于身边草烟引起了相当的注意时，便把一小束草烟扎到那人包袱上去，一面说，"不吸这个吗，这好的，这妙的，味道蛮好，送人也合式！"茶叶则在六月里放进大缸里去，用开水泡好，给过路人解渴。</p>
+          <p>管理这渡船的，就是住在塔下的那个老人。活了七十年，从二十岁起便守在这小溪边，五十年来不知把船来去渡了若干人。年纪虽那么老了，本来应当休息了，但天不许他休息，他仿佛便不能够同这一份生活离开。他从不思索自己的职务对于本人的意义，只是静静的很忠实的在那里活下去。</p>
+          <p>代替了天，使他在日头升起时，感到生活的力量，当日头落下时，又不至于思量与日头同时死去的，是那个伴在他身旁的女孩子。他唯一的朋友为一只渡船与一只黄狗，唯一的亲人便只那个女孩子。</p>
+          <span class="page-number">2</span>
+        </div>
+
+        <!-- Book Spine -->
+        <div class="book-spine"></div>
+
+        <!-- Right Page -->
+        <div class="page page-right">
+          <div class="ornament ornament-tr"></div>
+          <div class="ornament ornament-br"></div>
+
+          <!-- Page Curl Effect -->
+          <div class="page-curl"></div>
+          <div class="page-curl-shadow"></div>
+
+          <!-- Yellow Bookmark Tab -->
+          <div class="bookmark-tab" onclick="document.querySelector('.bookmark-popup').classList.toggle('show')">
+            <span class="bookmark-tab-text"> bookmark</span>
+          </div>
+
+          <p>小孩生下后，却到溪边吃了许多冷水，居然长大成人，一转眼便在水，因为余地有限，逼人而来，老船夫随便为这可渐进街后，河街上成城上，人人皆翠翠"。</p>
+          <p>翠翠在风日里长养着，<span class="highlight-yellow">把皮肤变得黑黑的</span>，触目为青山绿水，一对眸子清明如水晶。自然既长养她且教育她，为人天真活泼，处处俨然如一只小兽物。人又那么乖，如山头黄鹰一样，从不想到残忍事情，从不发愁，从不动气。</p>
+          <p>老船夫不论晴雨，必守在船头。有人过渡时，便略弯着腰，两手缘引了竹缆，把船横渡过小溪。有时疲倦了，躺在临溪大石上睡着了，人在隔岸招手喊过渡，翠翠不让祖父起身，就跳下船去，很敏捷的替祖父把路人渡过溪，一切皆溜刷在行，从不误事。</p>
+          <p>风日清和的天气，无人过渡，镇日长闲，祖父同翠翠便坐在门前大岩石上晒太阳。或把一段木头从高处向水中抛去，嗾使身边黄狗自岩石高处跃下，把木头衔回来。或翠翠与黄狗皆张着耳朵，听祖父说些城中多年以前的战争故事。</p>
+          <span class="page-number">3</span>
+        </div>
+      </div>
+
+      <!-- Book Edge -->
+      <div class="book-edge"></div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="progress-container">
+      <span class="progress-text">第 2-3 页 / 共 156 页</span>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">45%</span>
+    </div>
+    <span class="page-nav">◀ 上一页 | 下一页 ▶</span>
+  </div>
+</div>
+
+</body>
+</html>

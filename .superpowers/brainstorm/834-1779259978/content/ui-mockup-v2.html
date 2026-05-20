@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SetsunaRead UI Mockup v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Serif SC', 'SimSun', serif;
+    background: #2c2c2c;
+    color: #fff;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Left Toolbar */
+  .toolbar-left {
+    width: 52px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #222 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 0;
+    gap: 4px;
+    z-index: 10;
+    border-right: 1px solid #333;
+  }
+
+  .tool-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: #999;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .tool-btn:hover { background: #333; color: #fff; }
+  .tool-btn.active {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  }
+
+  .tool-btn .tooltip {
+    position: absolute;
+    left: 52px;
+    background: #333;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .tool-btn:hover .tooltip { opacity: 1; }
+
+  .toolbar-divider {
+    width: 28px;
+    height: 1px;
+    background: #444;
+    margin: 6px 0;
+  }
+
+  /* Main Content */
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .header {
+    height: 36px;
+    background: #1e1e1e;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid #333;
+  }
+  .header .book-title {
+    font-size: 13px;
+    color: #aaa;
+    font-family: 'Microsoft YaHei', sans-serif;
+  }
+  .header .chapter-info {
+    font-size: 12px;
+    color: #666;
+    font-family: 'Microsoft YaHei', sans-serif;
+  }
+  .window-controls {
+    display: flex;
+    gap: 8px;
+  }
+  .window-controls span {
+    width: 12px; height: 12px; border-radius: 50%; cursor: pointer;
+  }
+  .btn-minimize { background: #fbbf24; }
+  .btn-maximize { background: #4ade80; }
+  .btn-close { background: #f87711; }
+
+  /* Book View */
+  .book-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #2c2c2c;
+    padding: 20px 60px;
+    position: relative;
+  }
+
+  .book-wrapper {
+    display: flex;
+    gap: 0;
+    filter: drop-shadow(0 8px 32px rgba(0,0,0,0.5));
+  }
+
+  .page {
+    width: 420px;
+    height: 560px;
+    padding: 45px 40px;
+    position: relative;
+    font-size: 14.5px;
+    line-height: 2;
+    color: #333;
+    text-align: justify;
+  }
+
+  .page-left {
+    background: linear-gradient(135deg, #f8f4ed 0%, #f0ebe0 100%);
+    border-radius: 4px 0 0 4px;
+    box-shadow:
+      inset -8px 0 16px -8px rgba(0,0,0,0.08),
+      inset 0 0 30px rgba(0,0,0,0.02);
+  }
+
+  .page-right {
+    background: linear-gradient(135deg, #f5f0e8 0%, #ebe5d9 100%);
+    border-radius: 0 4px 4px 0;
+    box-shadow:
+      inset 8px 0 16px -8px rgba(0,0,0,0.08),
+      inset 0 0 30px rgba(0,0,0,0.02);
+  }
+
+  /* Book spine */
+  .book-spine {
+    width: 6px;
+    background: linear-gradient(90deg,
+      rgba(0,0,0,0.12) 0%,
+      rgba(0,0,0,0.04) 30%,
+      rgba(255,255,255,0.05) 50%,
+      rgba(0,0,0,0.04) 70%,
+      rgba(0,0,0,0.12) 100%);
+  }
+
+  /* Page decorations */
+  .page::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    bottom: 40px;
+    border: 1px solid rgba(0,0,0,0.04);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  /* Page corner curl */
+  .page-right::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg,
+      transparent 48%,
+      rgba(0,0,0,0.03) 50%,
+      rgba(0,0,0,0.06) 52%,
+      #e8e3d8 52%);
+    border-radius: 0 0 4px 0;
+  }
+
+  .page p {
+    text-indent: 2em;
+    margin-bottom: 0.3em;
+  }
+
+  .page-number {
+    position: absolute;
+    bottom: 18px;
+    font-size: 12px;
+    color: #aaa;
+    font-family: 'Georgia', serif;
+  }
+  .page-left .page-number { left: 40px; }
+  .page-right .page-number { right: 40px; }
+
+  /* Bookmark highlight */
+  .highlight-yellow {
+    background: linear-gradient(180deg, transparent 60%, rgba(250, 204, 21, 0.4) 60%);
+    padding: 0 2px;
+  }
+
+  /* Right side info */
+  .right-panel {
+    position: fixed;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 5;
+  }
+
+  .side-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .side-icon:hover { background: #444; color: #fff; }
+
+  /* Bookmark Popup */
+  .bookmark-popup {
+    position: fixed;
+    right: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 280px;
+    background: #1a1a1a;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+    z-index: 20;
+  }
+
+  .bookmark-image {
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .bookmark-image::before {
+    content: '';
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    top: -30px;
+    right: -30px;
+  }
+
+  .bookmark-image::after {
+    content: '';
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 50%;
+    bottom: -20px;
+    left: 20px;
+  }
+
+  .bookmark-image .butterfly {
+    font-size: 48px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+    z-index: 1;
+  }
+
+  .bookmark-content {
+    padding: 20px;
+  }
+
+  .bookmark-title {
+    font-size: 15px;
+    color: #fff;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .bookmark-desc {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .bookmark-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid #333;
+  }
+
+  .bookmark-page {
+    font-size: 11px;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 4px 10px;
+    border-radius: 12px;
+  }
+
+  .bookmark-time {
+    font-size: 11px;
+    color: #666;
+  }
+
+  .bookmark-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .bookmark-action-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-goto {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+  }
+  .btn-goto:hover { transform: translateY(-1px); }
+
+  .btn-delete {
+    background: #333;
+    color: #999;
+  }
+  .btn-delete:hover { background: #ef4444; color: #fff; }
+
+  /* Bottom bar */
+  .bottom-bar {
+    height: 44px;
+    background: #1a1a1a;
+    border-top: 1px solid #333;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 16px;
+  }
+
+  .progress-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .progress-text {
+    font-size: 12px;
+    color: #888;
+    font-family: 'Microsoft YaHei', sans-serif;
+    min-width: 120px;
+  }
+
+  .progress-bar {
+    flex: 1;
+    height: 3px;
+    background: #333;
+    border-radius: 2px;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    border-radius: 2px;
+    width: 45%;
+    position: relative;
+  }
+
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    right: -5px;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    background: #fbbf24;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+  }
+
+  .page-nav {
+    font-size: 12px;
+    color: #666;
+    font-family: 'Microsoft YaHei', sans-serif;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- Left Toolbar -->
+<div class="toolbar-left">
+  <button class="tool-btn active">
+    <span>📑</span>
+    <span class="tooltip">目录</span>
+  </button>
+  <button class="tool-btn">
+    <span>🔖</span>
+    <span class="tooltip">书签</span>
+  </button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">
+    <span>✏️</span>
+    <span class="tooltip">批注</span>
+  </button>
+  <button class="tool-btn">
+    <span>🔍</span>
+    <span class="tooltip">搜索</span>
+  </button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">
+    <span>🌙</span>
+    <span class="tooltip">夜间模式</span>
+  </button>
+  <button class="tool-btn">
+    <span>⚙️</span>
+    <span class="tooltip">设置</span>
+  </button>
+  <div style="flex:1"></div>
+  <button class="tool-btn">
+    <span>📖</span>
+    <span class="tooltip">书架</span>
+  </button>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+  <!-- Header -->
+  <div class="header">
+    <span class="book-title">边城</span>
+    <span class="chapter-info">第一章</span>
+    <div class="window-controls">
+      <span class="btn-minimize"></span>
+      <span class="btn-maximize"></span>
+      <span class="btn-close"></span>
+    </div>
+  </div>
+
+  <!-- Book View -->
+  <div class="book-container">
+    <div class="book-wrapper">
+      <!-- Left Page -->
+      <div class="page page-left">
+        <p>但不成，凡事求个心安理得，出气力不受酬谁好意思，不管如何还是有人把钱的。管船人却情不过，也为了心安起见，便把这些钱托人到茶峒去买茶叶和草烟，将茶峒出产的上等草烟，一扎一扎挂在自己腰带边，过渡的谁需要这东西必慷慨奉赠。</p>
+        <p>有时从神气上估计那远路人对于身边草烟引起了相当的注意时，便把一小束草烟扎到那人包袱上去，一面说，"不吸这个吗，这好的，这妙的，味道蛮好，送人也合式！"茶叶则在六月里放进大缸里去，用开水泡好，给过路人解渴。</p>
+        <p>管理这渡船的，就是住在塔下的那个老人。活了七十年，从二十岁起便守在这小溪边，五十年来不知把船来去渡了若干人。年纪虽那么老了，本来应当休息了，但天不许他休息，他仿佛便不能够同这一份生活离开。他从不思索自己的职务对于本人的意义，只是静静的很忠实的在那里活下去。</p>
+        <p>代替了天，使他在日头升起时，感到生活的力量，当日头落下时，又不至于思量与日头同时死去的，是那个伴在他身旁的女孩子。他唯一的朋友为一只渡船与一只黄狗，唯一的亲人便只那个女孩子。</p>
+        <span class="page-number">2</span>
+      </div>
+
+      <!-- Book Spine -->
+      <div class="book-spine"></div>
+
+      <!-- Right Page -->
+      <div class="page page-right">
+        <p>小孩生下后，却到溪边吃了许多冷水，居然长大成人，一转眼便在水，因为余地有限，逼人而来，老船夫随便为这可渐进街后，河街上成城上，人人皆翠翠"。</p>
+        <p>翠翠在风日里长养着，<span class="highlight-yellow">把皮肤变得黑黑的</span>，触目为青山绿水，一对眸子清明如水晶。自然既长养她且教育她，为人天真活泼，处处俨然如一只小兽物。人又那么乖，如山头黄鹰一样，从不想到残忍事情，从不发愁，从不动气。</p>
+        <p>老船夫不论晴雨，必守在船头。有人过渡时，便略弯着腰，两手缘引了竹缆，把船横渡过小溪。有时疲倦了，躺在临溪大石上睡着了，人在隔岸招手喊过渡，翠翠不让祖父起身，就跳下船去，很敏捷的替祖父把路人渡过溪，一切皆溜刷在行，从不误事。</p>
+        <p>风日清和的天气，无人过渡，镇日长闲，祖父同翠翠便坐在门前大岩石上晒太阳。或把一段木头从高处向水中抛去，嗾使身边黄狗自岩石高处跃下，把木头衔回来。或翠翠与黄狗皆张着耳朵，听祖父说些城中多年以前的战争故事。</p>
+        <span class="page-number">3</span>
+      </div>
+    </div>
+
+    <!-- Bookmark Popup -->
+    <div class="bookmark-popup">
+      <div class="bookmark-image">
+        <span class="butterfly">🦋</span>
+      </div>
+      <div class="bookmark-content">
+        <div class="bookmark-title">把皮肤变得黑黑的</div>
+        <div class="bookmark-desc">翠翠在风日里长养着，把皮肤变得黑黑的，触目为青山绿水，一对眸子清明如水晶。</div>
+        <div class="bookmark-meta">
+          <span class="bookmark-page">第 3 页</span>
+          <span class="bookmark-time">2026-05-20</span>
+        </div>
+        <div class="bookmark-actions">
+          <button class="bookmark-action-btn btn-goto">跳转</button>
+          <button class="bookmark-action-btn btn-delete">删除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Bar -->
+  <div class="bottom-bar">
+    <div class="progress-container">
+      <span class="progress-text">第 2-3 页 / 共 156 页</span>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text" style="text-align: right;">45%</span>
+    </div>
+    <span class="page-nav">◀ 上一页 | 下一页 ▶</span>
+  </div>
+</div>
+
+</body>
+</html>

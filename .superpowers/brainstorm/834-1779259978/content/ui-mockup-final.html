@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SetsunaRead - Pixel Perfect</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Serif SC', 'SimSun', serif;
+    background: #4a4a4a;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Left Toolbar */
+  .toolbar-left {
+    width: 48px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #222 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 4px;
+    z-index: 10;
+  }
+  .tool-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px; border: none;
+    background: transparent; color: #888;
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .tool-btn:hover { background: #333; color: #fff; }
+  .tool-btn.active {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+  }
+  .toolbar-divider { width: 24px; height: 1px; background: #444; margin: 8px 0; }
+
+  /* Main */
+  .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .header {
+    height: 32px; background: #1e1e1e;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; border-bottom: 1px solid #333;
+  }
+  .header .book-title { font-size: 12px; color: #aaa; font-family: 'Microsoft YaHei', sans-serif; }
+  .header .chapter-info { font-size: 11px; color: #666; font-family: 'Microsoft YaHei', sans-serif; }
+  .window-controls { display: flex; gap: 8px; }
+  .window-controls span { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+  .btn-minimize { background: #fbbf24; }
+  .btn-maximize { background: #4ade80; }
+  .btn-close { background: #f87711; }
+
+  /* Book Container */
+  .book-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #4a4a4a;
+    position: relative;
+  }
+
+  /* 3D Book */
+  .book-3d {
+    position: relative;
+    transform: perspective(2000px) rotateX(1deg);
+  }
+
+  /* Global diffuse shadow */
+  .book-shadow {
+    position: absolute;
+    bottom: -20px;
+    left: -20px;
+    right: -20px;
+    height: 40px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.45) 0%, transparent 65%);
+    filter: blur(12px);
+    z-index: -1;
+  }
+
+  /* Book pages container */
+  .book-pages {
+    display: flex;
+    position: relative;
+    box-shadow:
+      0 2px 6px rgba(0,0,0,0.12),
+      0 6px 20px rgba(0,0,0,0.18);
+  }
+
+  /* ========== LEFT PAGE ========== */
+  .page-left {
+    width: 48vw;
+    max-width: 520px;
+    height: 85vh;
+    max-height: 720px;
+    padding: 60px 55px 60px 60px;
+    background: linear-gradient(90deg, #ede8dc 0%, #f2ede2 70%, #f6f1e8 100%);
+    position: relative;
+    font-size: 15px;
+    line-height: 2;
+    color: #2a2a2a;
+    text-align: justify;
+    overflow: hidden;
+    box-sizing: border-box;
+    border-radius: 2px 0 0 2px;
+  }
+
+  /* ========== RIGHT PAGE ========== */
+  .page-right {
+    width: 48vw;
+    max-width: 520px;
+    height: 85vh;
+    max-height: 720px;
+    padding: 60px 60px 70px 55px;
+    background: linear-gradient(270deg, #e4ded0 0%, #ede7da 20%, #f5f0e6 100%);
+    position: relative;
+    font-size: 15px;
+    line-height: 2;
+    color: #2a2a2a;
+    text-align: justify;
+    overflow: hidden;
+    box-sizing: border-box;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* ========== BOOK SPINE - 书脊折痕 ========== */
+  .book-spine {
+    width: 32px;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* Deep crease shadow */
+  .book-spine::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(90deg,
+      rgba(0,0,0,0.22) 0%,
+      rgba(0,0,0,0.12) 25%,
+      rgba(0,0,0,0.05) 45%,
+      rgba(255,255,255,0.03) 50%,
+      rgba(0,0,0,0.05) 55%,
+      rgba(0,0,0,0.12) 75%,
+      rgba(0,0,0,0.22) 100%
+    );
+  }
+
+  /* Center fold line */
+  .book-spine::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 15px;
+    bottom: 15px;
+    width: 1px;
+    background: rgba(0,0,0,0.08);
+    transform: translateX(-50%);
+  }
+
+  /* Page edge shadows near spine */
+  .page-left::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 25px;
+    background: linear-gradient(270deg, rgba(0,0,0,0.06) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .page-right::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 25px;
+    background: linear-gradient(90deg, rgba(0,0,0,0.06) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ========== VICTORIAN FILIGREE ORNAMENTS ========== */
+  /* Each corner gets an intricate SVG ornament */
+  .filigree {
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .filigree-tl { top: 12px; left: 12px; }
+  .filigree-tr { top: 12px; right: 12px; transform: scaleX(-1); }
+  .filigree-bl { bottom: 12px; left: 12px; transform: scaleY(-1); }
+  .filigree-br { bottom: 12px; right: 12px; transform: scale(-1,-1); }
+
+  .filigree svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  /* Page text */
+  .page p {
+    text-indent: 2em;
+    margin-bottom: 0.3em;
+    word-break: break-all;
+    overflow-wrap: break-word;
+  }
+
+  /* Page number */
+  .page-number {
+    position: absolute;
+    bottom: 25px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12px;
+    color: #999;
+    font-family: 'Georgia', serif;
+    letter-spacing: 1px;
+    z-index: 5;
+  }
+
+  /* ========== 3D BOOKMARK ========== */
+  .bookmark-3d {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    z-index: 40;
+    cursor: pointer;
+  }
+
+  /* Clip part - 夹子 */
+  .bookmark-clip {
+    width: 90px;
+    height: 16px;
+    background: linear-gradient(180deg, #333 0%, #222 100%);
+    border-radius: 6px 6px 0 0;
+    position: relative;
+    margin: 0 auto;
+    box-shadow:
+      0 -3px 10px rgba(0,0,0,0.35),
+      inset 0 1px 3px rgba(255,255,255,0.12),
+      inset 0 -1px 2px rgba(0,0,0,0.3);
+  }
+
+  .bookmark-clip::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 15%;
+    right: 15%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+    border-radius: 1px;
+  }
+
+  /* Ribbon body - 半透明磨砂 */
+  .bookmark-ribbon {
+    width: 82px;
+    margin: 0 auto;
+    background: rgba(15,15,15,0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 0 0 6px 6px;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 8px 32px rgba(0,0,0,0.45),
+      0 2px 8px rgba(0,0,0,0.3),
+      inset 0 1px 1px rgba(255,255,255,0.06);
+  }
+
+  /* Gloss effect */
+  .bookmark-ribbon::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 8%; right: 55%;
+    height: 100%;
+    background: linear-gradient(180deg,
+      rgba(255,255,255,0.08) 0%,
+      rgba(255,255,255,0.02) 25%,
+      transparent 50%
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Text content - 两列竖排 */
+  .bookmark-text-area {
+    padding: 14px 8px 8px;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .bookmark-col {
+    writing-mode: vertical-rl;
+    color: rgba(255,255,255,0.88);
+    font-size: 10px;
+    letter-spacing: 2px;
+    line-height: 1.6;
+    font-family: 'Noto Serif SC', serif;
+  }
+
+  /* Butterfly SVG */
+  .bookmark-butterfly {
+    text-align: center;
+    padding: 10px 0 8px;
+    position: relative;
+  }
+
+  .bookmark-butterfly svg {
+    width: 44px;
+    height: 44px;
+    filter: drop-shadow(0 0 10px rgba(147,112,219,0.5));
+    opacity: 0.85;
+  }
+
+  /* Red stamp - 印章 */
+  .bookmark-stamp {
+    display: flex;
+    justify-content: center;
+    padding: 6px 0 12px;
+  }
+
+  .stamp-svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Book edge - 书页厚度 */
+  .book-edge {
+    position: absolute;
+    right: -14px;
+    top: 5px;
+    bottom: 5px;
+    width: 14px;
+    background: linear-gradient(90deg,
+      #c4b8a8 0%,
+      #d4c8b8 20%,
+      #cdc0ae 45%,
+      #c0b39e 70%,
+      #a89880 100%
+    );
+    border-radius: 0 4px 4px 0;
+    box-shadow: 3px 2px 8px rgba(0,0,0,0.25);
+  }
+
+  .book-edge::before {
+    content: '';
+    position: absolute;
+    left: 2px; top: 6px; bottom: 6px; right: 1px;
+    background: repeating-linear-gradient(180deg,
+      #e8e0d4 0px, #e8e0d4 1px,
+      #ddd5c8 1px, #ddd5c8 2px
+    );
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    height: 40px; background: #1a1a1a;
+    border-top: 1px solid #333;
+    display: flex; align-items: center;
+    padding: 0 20px; gap: 16px;
+  }
+  .progress-container { flex: 1; display: flex; align-items: center; gap: 12px; }
+  .progress-text { font-size: 11px; color: #888; font-family: 'Microsoft YaHei', sans-serif; }
+  .progress-bar { flex: 1; height: 3px; background: #333; border-radius: 2px; position: relative; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24); border-radius: 2px; width: 65%; }
+  .progress-fill::after { content: ''; position: absolute; right: -5px; top: -3.5px; width: 10px; height: 10px; background: #fbbf24; border-radius: 50%; box-shadow: 0 0 6px rgba(245,158,11,0.4); }
+  .page-nav { font-size: 11px; color: #666; font-family: 'Microsoft YaHei', sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- Left Toolbar -->
+<div class="toolbar-left">
+  <button class="tool-btn active">📑</button>
+  <button class="tool-btn">🔖</button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">✏️</button>
+  <button class="tool-btn">🔍</button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">🌙</button>
+  <button class="tool-btn">⚙️</button>
+  <div style="flex:1"></div>
+  <button class="tool-btn">📖</button>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="header">
+    <span class="book-title">边城</span>
+    <span class="chapter-info">第四章</span>
+    <div class="window-controls">
+      <span class="btn-minimize"></span>
+      <span class="btn-maximize"></span>
+      <span class="btn-close"></span>
+    </div>
+  </div>
+
+  <div class="book-container">
+    <div class="book-3d">
+      <div class="book-shadow"></div>
+
+      <!-- ========== 3D BOOKMARK ========== -->
+      <div class="bookmark-3d">
+        <div class="bookmark-clip"></div>
+        <div class="bookmark-ribbon">
+          <!-- Vertical text - two columns -->
+          <div class="bookmark-text-area">
+            <div class="bookmark-col">让我的书有我的思想</div>
+            <div class="bookmark-col">把你我的悲哀同分享</div>
+          </div>
+
+          <!-- Butterfly SVG -->
+          <div class="bookmark-butterfly">
+            <svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="wingGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" style="stop-color:#b39ddb;stop-opacity:0.6"/>
+                  <stop offset="100%" style="stop-color:#7e57c2;stop-opacity:0.2"/>
+                </radialGradient>
+                <linearGradient id="wingColor" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ce93d8;stop-opacity:0.7"/>
+                  <stop offset="50%" style="stop-color:#b39ddb;stop-opacity:0.5"/>
+                  <stop offset="100%" style="stop-color:#9575cd;stop-opacity:0.6"/>
+                </linearGradient>
+              </defs>
+              <!-- Left upper wing -->
+              <path d="M50,35 Q30,10 15,20 Q5,28 20,40 Q30,48 50,45 Z" fill="url(#wingColor)" stroke="rgba(206,147,216,0.4)" stroke-width="0.5"/>
+              <!-- Right upper wing -->
+              <path d="M50,35 Q70,10 85,20 Q95,28 80,40 Q70,48 50,45 Z" fill="url(#wingColor)" stroke="rgba(206,147,216,0.4)" stroke-width="0.5"/>
+              <!-- Left lower wing -->
+              <path d="M50,45 Q35,50 25,60 Q20,68 35,65 Q45,60 50,50 Z" fill="url(#wingColor)" stroke="rgba(206,147,216,0.3)" stroke-width="0.5" opacity="0.8"/>
+              <!-- Right lower wing -->
+              <path d="M50,45 Q65,50 75,60 Q80,68 65,65 Q55,60 50,50 Z" fill="url(#wingColor)" stroke="rgba(206,147,216,0.3)" stroke-width="0.5" opacity="0.8"/>
+              <!-- Body -->
+              <ellipse cx="50" cy="42" rx="2" ry="12" fill="rgba(120,80,140,0.6)"/>
+              <!-- Antennae -->
+              <path d="M50,30 Q45,20 40,15" fill="none" stroke="rgba(150,100,170,0.5)" stroke-width="0.8"/>
+              <path d="M50,30 Q55,20 60,15" fill="none" stroke="rgba(150,100,170,0.5)" stroke-width="0.8"/>
+              <circle cx="40" cy="15" r="1.5" fill="rgba(180,130,200,0.5)"/>
+              <circle cx="60" cy="15" r="1.5" fill="rgba(180,130,200,0.5)"/>
+              <!-- Wing veins -->
+              <path d="M50,35 Q35,25 25,28" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+              <path d="M50,35 Q65,25 75,28" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="0.5"/>
+              <!-- Glow effect -->
+              <ellipse cx="50" cy="40" rx="35" ry="30" fill="url(#wingGlow)" opacity="0.3"/>
+            </svg>
+          </div>
+
+          <!-- Red stamp with "iRead" -->
+          <div class="bookmark-stamp">
+            <svg class="stamp-svg" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+              <!-- Red square -->
+              <rect x="2" y="2" width="36" height="36" rx="3" fill="#c0392b" stroke="#a93226" stroke-width="1"/>
+              <!-- Inner border -->
+              <rect x="5" y="5" width="30" height="30" rx="2" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.8"/>
+              <!-- iRead text -->
+              <text x="20" y="24" text-anchor="middle" fill="white" font-family="Georgia, serif" font-size="11" font-weight="bold" letter-spacing="0.5">iRead</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== BOOK PAGES ========== -->
+      <div class="book-pages">
+
+        <!-- LEFT PAGE -->
+        <div class="page page-left">
+
+          <!-- Victorian Filigree - Top Left -->
+          <div class="filigree filigree-tl">
+            <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+              <g fill="none" stroke="#5a4a35" stroke-width="1" opacity="0.25" stroke-linecap="round">
+                <!-- Main vine curves -->
+                <path d="M5,5 C5,25 15,35 25,40"/>
+                <path d="M5,5 C25,5 35,15 40,25"/>
+                <!-- Leaf shapes -->
+                <path d="M8,12 C12,18 18,22 22,24"/>
+                <path d="M12,8 C18,12 22,18 24,22"/>
+                <!-- Spiral tendrils -->
+                <path d="M6,18 C10,24 16,26 18,24 C16,22 12,18 6,18"/>
+                <path d="M18,6 C24,10 26,16 24,18 C22,16 18,12 18,6"/>
+                <!-- Small flower -->
+                <circle cx="28" cy="28" r="3" fill="#5a4a35" fill-opacity="0.15"/>
+                <circle cx="28" cy="28" r="1.5" fill="#5a4a35" fill-opacity="0.2"/>
+                <!-- Additional vine details -->
+                <path d="M30,32 C34,36 38,38 42,38"/>
+                <path d="M32,30 C36,34 38,38 38,42"/>
+                <!-- Tiny leaves -->
+                <path d="M35,35 L38,32 L40,36 Z" fill="#5a4a35" fill-opacity="0.1"/>
+                <path d="M35,35 L32,38 L36,40 Z" fill="#5a4a35" fill-opacity="0.1"/>
+                <!-- Dots -->
+                <circle cx="5" cy="5" r="2" fill="#5a4a35" fill-opacity="0.3"/>
+                <circle cx="14" cy="14" r="1" fill="#5a4a35" fill-opacity="0.2"/>
+                <circle cx="42" cy="38" r="1" fill="#5a4a35" fill-opacity="0.15"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Victorian Filigree - Bottom Left -->
+          <div class="filigree filigree-bl">
+            <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+              <g fill="none" stroke="#5a4a35" stroke-width="1" opacity="0.25" stroke-linecap="round">
+                <path d="M5,5 C5,25 15,35 25,40"/>
+                <path d="M5,5 C25,5 35,15 40,25"/>
+                <path d="M8,12 C12,18 18,22 22,24"/>
+                <path d="M12,8 C18,12 22,18 24,22"/>
+                <path d="M6,18 C10,24 16,26 18,24 C16,22 12,18 6,18"/>
+                <path d="M18,6 C24,10 26,16 24,18 C22,16 18,12 18,6"/>
+                <circle cx="28" cy="28" r="3" fill="#5a4a35" fill-opacity="0.15"/>
+                <circle cx="28" cy="28" r="1.5" fill="#5a4a35" fill-opacity="0.2"/>
+                <path d="M30,32 C34,36 38,38 42,38"/>
+                <path d="M32,30 C36,34 38,38 38,42"/>
+                <path d="M35,35 L38,32 L40,36 Z" fill="#5a4a35" fill-opacity="0.1"/>
+                <path d="M35,35 L32,38 L36,40 Z" fill="#5a4a35" fill-opacity="0.1"/>
+                <circle cx="5" cy="5" r="2" fill="#5a4a35" fill-opacity="0.3"/>
+                <circle cx="14" cy="14" r="1" fill="#5a4a35" fill-opacity="0.2"/>
+                <circle cx="42" cy="38" r="1" fill="#5a4a35" fill-opacity="0.15"/>
+              </g>
+            </svg>
+          </div>
+
+          <p>"你以为翠翠肯了我还会不肯吗？"</p>
+          <p>"不咧，人家以为这件事你老人家肯了，翠翠便无有不肯呢。"</p>
+          <p>"不能那么说，这是她的事啊！"</p>
+          <p>"便是她的事，可是必需老的作主，人家也仍然以为在日头月光下唱三年六个月的歌，还不如得伯伯说一句话好！"</p>
+          <p>"那么，我说，我们就这样办，等他从川东回来时要他同顺顺去说说明白。我呢，我也先问问翠翠；苦以为听了三年六个月的歌再跟那唱歌人走去有意思些，我就请你劝大老走他那弯弯曲曲的马路。"</p>
+          <p>"那好的。见了他我就说：'大老，笑话吗，我已说过了。真话呢，看你自己的命运去了。'当真看他的命运去了，不过我明白他的命运，还是在你老人家手上捏着的。"</p>
+          <p>"不是那么说！我若捏得定这件事，我马上就答应了。"</p>
+          <p>这里两人把话说妥后，就过另一处看一只顺顺新近买来的三舱船去了。河街上顺顺吊脚楼方面，却有了如下事情。</p>
+          <p>翠翠虽被那乡绅女孩喊到身边去坐，地位非常之好，从窗口望出去，河中一切朗然在望，然而心中可不安宁。挤在其他几个窗口看热闹的</p>
+          <span class="page-number">50</span>
+        </div>
+
+        <!-- BOOK SPINE -->
+        <div class="book-spine"></div>
+
+        <!-- RIGHT PAGE -->
+        <div class="page page-right">
+
+          <!-- Victorian Filigree - Top Right -->
+          <div class="filigree filigree-tr">
+            <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+              <g fill="none" stroke="#5a4a35" stroke-width="1" opacity="0.25" stroke-linecap="round">
+                <path d="M5,5 C5,25 15,35 25,40"/>
+                <path d="M5,5 C25,5 35,15 40,25"/>
+                <path d="M8,12 C12,18 18,22 22,24"/>
+                <path d="M12,8 C18,12 22,18 24,22"/>
+                <path d="M6,18 C10,24 16,26 18,24 C16,22 12,18 6,18"/>
+                <path d="M18,6 C24,10 26,16 24,18 C22,16 18,12 18,6"/>
+                <circle cx="28" cy="28" r="3" fill="#5a4a35" fill-opacity="0.15"/>
+                <circle cx="28" cy="28" r="1.5" fill="#5a4a35" fill-opacity="0.2"/>
+                <path d="M30,32 C34,36 38,38 42,38"/>
+                <path d="M32,30 C36,34 38,38 38,42"/>
+                <path d="M35,35 L38,32 L40,36 Z" fill="#5a4a35" fill-opacity="0.1"/>
+                <path d="M35,35 L32,38 L36,40 Z" fill="#5a4a35" fill-opacity="0.1"/>
+                <circle cx="5" cy="5" r="2" fill="#5a4a35" fill-opacity="0.3"/>
+                <circle cx="14" cy="14" r="1" fill="#5a4a35" fill-opacity="0.2"/>
+                <circle cx="42" cy="38" r="1" fill="#5a4a35" fill-opacity="0.15"/>
+              </g>
+            </svg>
+          </div>
+
+          <!-- Victorian Filigree - Bottom Right -->
+          <div class="filigree filigree-br">
+            <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+              <g fill="none" stroke="#5a4a35" stroke-width="1" opacity="0.25" stroke-linecap="round">
+                <path d="M5,5 C5,25 15,35 25,40"/>
+                <path d="M5,5 C25,5 35,15 40,25"/>
+                <path d="M8,12 C12,18 18,22 22,24"/>
+                <path d="M12,8 C18,12 22,18 24,22"/>
+                <path d="M6,18 C10,24 16,26 18,24 C16,22 12,18 6,18"/>
+                <path d="M18,6 C24,10 26,16 24,18 C22,16 18,12 18,6"/>
+                <circle cx="28" cy="28" r="3" fill="#5a4a35" fill-opacity="0.15"/>
+                <circle cx="28" cy="28" r="1.5" fill="#5a4a35" fill-opacity="0.2"/>
+                <path d="M30,32 C34,36 38,38 42,38"/>
+                <path d="M32,30 C36,34 38,38 38,42"/>
+                <path d="M35,35 L38,32 L40,36 Z" fill="#5a4a35" fill-opacity="0.1"/>
+                <path d="M35,35 L32,38 L36,40 Z" fill="#5a4a35" fill-opacity="0.1"/>
+                <circle cx="5" cy="5" r="2" fill="#5a4a35" fill-opacity="0.3"/>
+                <circle cx="14" cy="14" r="1" fill="#5a4a35" fill-opacity="0.2"/>
+                <circle cx="42" cy="38" r="1" fill="#5a4a35" fill-opacity="0.15"/>
+              </g>
+            </svg>
+          </div>
+
+          <p>常常把眼光从河中景物挪到这边几个人身上来。还有些人故意的事情样子，从楼这边走过那一边，事实上却全为得是好仔这方面几个人。翠翠心中老不自在，只想借故跑去。一会儿</p>
+          <p>响了，几只从对河取齐的船只，直向这方面划来。先是四条远，如四枝箭在水面射着，到了一半，已有两只船占先了些子，那两只船间便又有一只超过了并进的船只而前。看看门前时，第二次炮声又响，那船便胜利了。这时节胜利的已</p>
+          <p>街人所划的一只，各处便皆响着庆祝的小鞭炮。那船于是沿楼划去，鼓声蓬蓬作响，河边与吊脚楼各处，都同时呐喊表贺。翠翠眼见在船头站摇动小旗指挥进退头上包着红布的</p>
+          <p>那个年轻人，便是送酒葫芦到碧溪岨的二老，心中便印着三年前的旧事，"大鱼吃掉你！""吃掉吃掉，不用你管！""狗，狗，你也看人叫！"想起狗，翠翠才注意到自己身边那只黄狗，已不知跑到什么地方去，便离了座位，在楼上各处找寻她的黄狗，把船头人忘掉了。</p>
+          <p>她一面在人丛里找寻黄狗，一面听人家正说些什么话。</p>
+          <p>一个大脸妇人问："是谁家的人，坐到顺顺家当中窗口前的那块好地方？"</p>
+          <span class="page-number">51</span>
+        </div>
+      </div>
+
+      <!-- Book Edge -->
+      <div class="book-edge"></div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="progress-container">
+      <span class="progress-text">第 50-51 页 / 共 156 页</span>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">65%</span>
+    </div>
+    <span class="page-nav">◀ 上一页 | 下一页 ▶</span>
+  </div>
+</div>
+
+</body>
+</html>

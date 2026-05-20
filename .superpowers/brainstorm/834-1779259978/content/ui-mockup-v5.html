@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SetsunaRead UI Mockup v5</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Serif SC', 'SimSun', serif;
+    background: #2a2a2a;
+    color: #fff;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Left Toolbar */
+  .toolbar-left {
+    width: 48px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #222 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 4px;
+    z-index: 10;
+  }
+  .tool-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px; border: none;
+    background: transparent; color: #888;
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .tool-btn:hover { background: #333; color: #fff; }
+  .tool-btn.active {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.3);
+  }
+  .toolbar-divider { width: 24px; height: 1px; background: #444; margin: 8px 0; }
+
+  /* Main */
+  .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .header {
+    height: 32px; background: #1e1e1e;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; border-bottom: 1px solid #333;
+  }
+  .header .book-title { font-size: 12px; color: #aaa; font-family: 'Microsoft YaHei', sans-serif; }
+  .header .chapter-info { font-size: 11px; color: #666; font-family: 'Microsoft YaHei', sans-serif; }
+  .window-controls { display: flex; gap: 8px; }
+  .window-controls span { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+  .btn-minimize { background: #fbbf24; }
+  .btn-maximize { background: #4ade80; }
+  .btn-close { background: #f87711; }
+
+  /* Book Container */
+  .book-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #2a2a2a;
+    position: relative;
+  }
+
+  /* 3D Book */
+  .book-3d {
+    position: relative;
+    display: flex;
+  }
+
+  /* Book pages wrapper */
+  .book-pages {
+    display: flex;
+    position: relative;
+    filter: drop-shadow(0 6px 24px rgba(0,0,0,0.4));
+  }
+
+  /* Page */
+  .page {
+    width: 46vw;
+    max-width: 500px;
+    height: 82vh;
+    max-height: 680px;
+    padding: 48px 52px;
+    position: relative;
+    font-size: 15px;
+    line-height: 2;
+    color: #333;
+    text-align: justify;
+  }
+
+  .page-left {
+    background: linear-gradient(135deg, #f8f4ed 0%, #f0ebe0 100%);
+    border-radius: 3px 0 0 3px;
+    box-shadow: inset -10px 0 18px -10px rgba(0,0,0,0.05);
+  }
+
+  .page-right {
+    background: linear-gradient(135deg, #f5f0e8 0%, #ebe5d9 100%);
+    border-radius: 0 3px 3px 0;
+    box-shadow: inset 10px 0 18px -10px rgba(0,0,0,0.05);
+  }
+
+  /* Book spine */
+  .book-spine {
+    width: 24px;
+    background: linear-gradient(90deg,
+      rgba(0,0,0,0.12) 0%,
+      rgba(0,0,0,0.04) 35%,
+      rgba(255,255,255,0.06) 50%,
+      rgba(0,0,0,0.04) 65%,
+      rgba(0,0,0,0.12) 100%
+    );
+  }
+
+  /* Page decorative corners */
+  .page-corner {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+
+  .corner-tl {
+    top: 16px; left: 16px;
+    border-top: 2px solid #8b7355;
+    border-left: 2px solid #8b7355;
+  }
+  .corner-tl::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: 8px;
+    width: 30px; height: 30px;
+    border-top: 1px solid #8b7355;
+    border-left: 1px solid #8b7355;
+  }
+
+  .corner-tr {
+    top: 16px; right: 16px;
+    border-top: 2px solid #8b7355;
+    border-right: 2px solid #8b7355;
+  }
+  .corner-tr::before {
+    content: '';
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 30px; height: 30px;
+    border-top: 1px solid #8b7355;
+    border-right: 1px solid #8b7355;
+  }
+
+  .corner-bl {
+    bottom: 16px; left: 16px;
+    border-bottom: 2px solid #8b7355;
+    border-left: 2px solid #8b7355;
+  }
+  .corner-bl::before {
+    content: '';
+    position: absolute;
+    bottom: 8px; left: 8px;
+    width: 30px; height: 30px;
+    border-bottom: 1px solid #8b7355;
+    border-left: 1px solid #8b7355;
+  }
+
+  .corner-br {
+    bottom: 16px; right: 16px;
+    border-bottom: 2px solid #8b7355;
+    border-right: 2px solid #8b7355;
+  }
+  .corner-br::before {
+    content: '';
+    position: absolute;
+    bottom: 8px; right: 8px;
+    width: 30px; height: 30px;
+    border-bottom: 1px solid #8b7355;
+    border-right: 1px solid #8b7355;
+  }
+
+  .page p {
+    text-indent: 2em;
+    margin-bottom: 0.4em;
+  }
+
+  .page-number {
+    position: absolute;
+    bottom: 22px;
+    font-size: 13px;
+    color: #aaa;
+    font-family: 'Georgia', serif;
+  }
+  .page-left .page-number { left: 52px; }
+  .page-right .page-number { right: 52px; }
+
+  .highlight-yellow {
+    background: linear-gradient(180deg, transparent 55%, rgba(250,204,21,0.35) 55%);
+    padding: 0 2px;
+  }
+
+  /* Book edge (thickness) */
+  .book-edge {
+    position: absolute;
+    right: -16px;
+    top: 4px;
+    bottom: 4px;
+    width: 16px;
+    background: linear-gradient(90deg,
+      #c4b8a8 0%,
+      #d4c8b8 30%,
+      #c9bda8 50%,
+      #bfaf98 70%,
+      #a89880 100%
+    );
+    border-radius: 0 4px 4px 0;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+  }
+  .book-edge::before {
+    content: '';
+    position: absolute;
+    left: 2px; top: 6px; bottom: 6px; right: 1px;
+    background: repeating-linear-gradient(
+      180deg,
+      #e8e0d4 0px, #e8e0d4 1px,
+      #ddd5c8 1px, #ddd5c8 2px
+    );
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* ========== Bookmark Card - 浮在书页上方 ========== */
+  .bookmark-card {
+    position: absolute;
+    top: 50%;
+    right: calc(50% - 320px);
+    transform: translateY(-50%);
+    width: 200px;
+    background: #111;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    z-index: 30;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .bookmark-card:hover {
+    transform: translateY(-50%) scale(1.02);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+  }
+
+  .bookmark-card-image {
+    width: 100%;
+    height: 160px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Decorative elements */
+  .bookmark-card-image::before {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+    top: -60px;
+    right: -40px;
+  }
+
+  .bookmark-card-image .butterfly {
+    font-size: 64px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+  }
+
+  .bookmark-card-content {
+    padding: 16px;
+  }
+
+  .bookmark-card-quote {
+    font-size: 12px;
+    color: #ccc;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .bookmark-card-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #333;
+  }
+
+  .brand-icon {
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .brand-text {
+    font-size: 14px;
+    color: #fff;
+    font-weight: 600;
+    font-family: 'Georgia', serif;
+  }
+
+  .brand-sub {
+    font-size: 9px;
+    color: #888;
+    font-family: 'Microsoft YaHei', sans-serif;
+  }
+
+  /* Second bookmark card - slightly offset */
+  .bookmark-card-2 {
+    right: calc(50% - 100px);
+    top: 45%;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    height: 40px; background: #1a1a1a;
+    border-top: 1px solid #333;
+    display: flex; align-items: center;
+    padding: 0 20px; gap: 16px;
+  }
+  .progress-container {
+    flex: 1; display: flex; align-items: center; gap: 12px;
+  }
+  .progress-text {
+    font-size: 11px; color: #888;
+    font-family: 'Microsoft YaHei', sans-serif;
+  }
+  .progress-bar {
+    flex: 1; height: 3px; background: #333;
+    border-radius: 2px; position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    border-radius: 2px;
+    width: 45%;
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    right: -5px; top: -3.5px;
+    width: 10px; height: 10px;
+    background: #fbbf24; border-radius: 50%;
+    box-shadow: 0 0 6px rgba(245,158,11,0.4);
+  }
+  .page-nav {
+    font-size: 11px; color: #666;
+    font-family: 'Microsoft YaHei', sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<!-- Left Toolbar -->
+<div class="toolbar-left">
+  <button class="tool-btn active">📑</button>
+  <button class="tool-btn">🔖</button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">✏️</button>
+  <button class="tool-btn">🔍</button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">🌙</button>
+  <button class="tool-btn">⚙️</button>
+  <div style="flex:1"></div>
+  <button class="tool-btn">📖</button>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+  <div class="header">
+    <span class="book-title">边城</span>
+    <span class="chapter-info">第一章</span>
+    <div class="window-controls">
+      <span class="btn-minimize"></span>
+      <span class="btn-maximize"></span>
+      <span class="btn-close"></span>
+    </div>
+  </div>
+
+  <div class="book-container">
+    <div class="book-3d">
+
+      <!-- Bookmark Card 1 -->
+      <div class="bookmark-card">
+        <div class="bookmark-card-image">
+          <span class="butterfly">🦋</span>
+        </div>
+        <div class="bookmark-card-content">
+          <div class="bookmark-card-quote">谁的有着我有的思想，把你我彼此共同分享</div>
+          <div class="bookmark-card-brand">
+            <div class="brand-icon">📖</div>
+            <div>
+              <div class="brand-text">SetsunaRead</div>
+              <div class="brand-sub">本地阅读</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bookmark Card 2 -->
+      <div class="bookmark-card bookmark-card-2">
+        <div class="bookmark-card-image" style="background: linear-gradient(135deg, #2d1b4e 0%, #1a1a2e 50%, #0f0f23 100%);">
+          <span class="butterfly">🌸</span>
+        </div>
+        <div class="bookmark-card-content">
+          <div class="bookmark-card-quote">为人天真活泼，处处俨然如一只小兽物</div>
+          <div class="bookmark-card-brand">
+            <div class="brand-icon">📖</div>
+            <div>
+              <div class="brand-text">SetsunaRead</div>
+              <div class="brand-sub">第 3 页</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Book Pages -->
+      <div class="book-pages">
+
+        <!-- Left Page -->
+        <div class="page page-left">
+          <div class="page-corner corner-tl"></div>
+          <div class="page-corner corner-bl"></div>
+
+          <p>但不成，凡事求个心安理得，出气力不受酬谁好意思，不管如何还是有人把钱的。管船人却情不过，也为了心安起见，便把这些钱托人到茶峒去买茶叶和草烟，将茶峒出产的上等草烟，一扎一扎挂在自己腰带边，过渡的谁需要这东西必慷慨奉赠。</p>
+          <p>有时从神气上估计那远路人对于身边草烟引起了相当的注意时，便把一小束草烟扎到那人包袱上去，一面说，"不吸这个吗，这好的，这妙的，味道蛮好，送人也合式！"茶叶则在六月里放进大缸里去，用开水泡好，给过路人解渴。</p>
+          <p>管理这渡船的，就是住在塔下的那个老人。活了七十年，从二十岁起便守在这小溪边，五十年来不知把船来去渡了若干人。年纪虽那么老了，本来应当休息了，但天不许他休息，他仿佛便不能够同这一份生活离开。他从不思索自己的职务对于本人的意义，只是静静的很忠实的在那里活下去。</p>
+          <p>代替了天，使他在日头升起时，感到生活的力量，当日头落下时，又不至于思量与日头同时死去的，是那个伴在他身旁的女孩子。他唯一的朋友为一只渡船与一只黄狗，唯一的亲人便只那个女孩子。</p>
+          <span class="page-number">2</span>
+        </div>
+
+        <!-- Book Spine -->
+        <div class="book-spine"></div>
+
+        <!-- Right Page -->
+        <div class="page page-right">
+          <div class="page-corner corner-tr"></div>
+          <div class="page-corner corner-br"></div>
+
+          <p>小孩生下后，却到溪边吃了许多冷水，居然长大成人，一转眼便在水，因为余地有限，逼人而来，老船夫随便为这可渐进街后，河街上成城上，人人皆翠翠"。</p>
+          <p>翠翠在风日里长养着，<span class="highlight-yellow">把皮肤变得黑黑的</span>，触目为青山绿水，一对眸子清明如水晶。自然既长养她且教育她，为人天真活泼，处处俨然如一只小兽物。人又那么乖，如山头黄鹰一样，从不想到残忍事情，从不发愁，从不动气。</p>
+          <p>老船夫不论晴雨，必守在船头。有人过渡时，便略弯着腰，两手缘引了竹缆，把船横渡过小溪。有时疲倦了，躺在临溪大石上睡着了，人在隔岸招手喊过渡，翠翠不让祖父起身，就跳下船去，很敏捷的替祖父把路人渡过溪，一切皆溜刷在行，从不误事。</p>
+          <p>风日清和的天气，无人过渡，镇日长闲，祖父同翠翠便坐在门前大岩石上晒太阳。或把一段木头从高处向水中抛去，嗾使身边黄狗自岩石高处跃下，把木头衔回来。或翠翠与黄狗皆张着耳朵，听祖父说些城中多年以前的战争故事。</p>
+          <span class="page-number">3</span>
+        </div>
+      </div>
+
+      <!-- Book Edge -->
+      <div class="book-edge"></div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="progress-container">
+      <span class="progress-text">第 2-3 页 / 共 156 页</span>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">45%</span>
+    </div>
+    <span class="page-nav">◀ 上一页 | 下一页 ▶</span>
+  </div>
+</div>
+
+</body>
+</html>

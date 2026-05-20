@@ -1,0 +1,76 @@
+<h2>技术方案对比</h2>
+<p class="subtitle">选择最适合你练习项目的技术路径</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%); padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="color: white; font-size: 14px; font-weight: 600;">方案 A：CSS 3D 变换</div>
+      <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; color: white; font-size: 13px;">
+        <div style="margin-bottom: 8px; font-weight: 500;">核心技术</div>
+        <div>• CSS transform: perspective + rotateY</div>
+        <div>• CSS transition 实现翻页动画</div>
+        <div>• 纯前端渲染，无需额外依赖</div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <div style="background: #4ade80; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 11px;">学习价值高</div>
+        <div style="background: #fbbf24; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 11px;">性能好</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>CSS 3D 变换方案</h3>
+      <p>用 CSS 原生 3D 能力实现书本翻页效果，最能锻炼 CSS 基础</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>零依赖，纯 CSS 实现</li><li>学习 3D 变换、透视、动画</li><li>性能优秀，硬件加速</li><li>代码量适中，适合练习</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>复杂翻页效果实现难度高</li><li>需要处理文字排版分页</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="color: white; font-size: 14px; font-weight: 600;">方案 B：Canvas 渲染</div>
+      <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; color: white; font-size: 13px;">
+        <div style="margin-bottom: 8px; font-weight: 500;">核心技术</div>
+        <div>• Canvas 2D 绘制书页内容</div>
+        <div>• 自定义翻页动画引擎</div>
+        <div>• 可实现任意复杂效果</div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <div style="background: #f87171; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 11px;">难度较高</div>
+        <div style="background: #60a5fa; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 11px;">效果最自由</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>Canvas 渲染方案</h3>
+      <p>用 Canvas 自定义绘制，可实现任意复杂的书本效果</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>效果完全自由可控</li><li>可实现逼真的纸张质感</li><li>学习 Canvas API</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>开发难度最大</li><li>文字选中、复制等交互复杂</li><li>需要自建排版引擎</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="color: white; font-size: 14px; font-weight: 600;">方案 C：混合方案（推荐）</div>
+      <div style="background: rgba(255,255,255,0.1); border-radius: 8px; padding: 12px; color: white; font-size: 13px;">
+        <div style="margin-bottom: 8px; font-weight: 500;">核心技术</div>
+        <div>• CSS 3D + Flip.js 翻页库</div>
+        <div>• React 组件化架构</div>
+        <div>• 平衡效果与开发效率</div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <div style="background: #4ade80; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 11px;">推荐方案</div>
+        <div style="background: #fbbf24; color: #000; padding: 4px 8px; border-radius: 4px; font-size: 11px;">学习+效果兼顾</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>混合方案（推荐）</h3>
+      <p>用成熟的翻页库处理动画，自己实现阅读逻辑和 UI</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>翻页效果有成熟库支持</li><li>专注阅读逻辑和 UI 开发</li><li>学习 React 组件化设计</li><li>难度适中，适合练习</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>依赖第三方库</li><li>自定义效果受限于库能力</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

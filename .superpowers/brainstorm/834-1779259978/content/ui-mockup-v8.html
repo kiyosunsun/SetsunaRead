@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SetsunaRead UI Mockup v8</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Serif SC', 'SimSun', serif;
+    background: #3a3a3a;
+    color: #fff;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Left Toolbar */
+  .toolbar-left {
+    width: 48px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #222 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 4px;
+    z-index: 10;
+  }
+  .tool-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px; border: none;
+    background: transparent; color: #888;
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .tool-btn:hover { background: #333; color: #fff; }
+  .tool-btn.active {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.3);
+  }
+  .toolbar-divider { width: 24px; height: 1px; background: #444; margin: 8px 0; }
+
+  /* Main */
+  .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .header {
+    height: 32px; background: #1e1e1e;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; border-bottom: 1px solid #333;
+  }
+  .header .book-title { font-size: 12px; color: #aaa; font-family: 'Microsoft YaHei', sans-serif; }
+  .header .chapter-info { font-size: 11px; color: #666; font-family: 'Microsoft YaHei', sans-serif; }
+  .window-controls { display: flex; gap: 8px; }
+  .window-controls span { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+  .btn-minimize { background: #fbbf24; }
+  .btn-maximize { background: #4ade80; }
+  .btn-close { background: #f87711; }
+
+  /* Book Container */
+  .book-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #3a3a3a;
+    position: relative;
+  }
+
+  /* 3D Book */
+  .book-3d {
+    position: relative;
+    transform: perspective(2000px) rotateX(1deg);
+  }
+
+  /* Book shadow */
+  .book-shadow {
+    position: absolute;
+    bottom: -16px;
+    left: 3%;
+    right: 3%;
+    height: 24px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, transparent 70%);
+    filter: blur(6px);
+  }
+
+  /* Book pages */
+  .book-pages {
+    display: flex;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  }
+
+  /* Left Page */
+  .page-left {
+    width: 46vw;
+    max-width: 500px;
+    height: 82vh;
+    max-height: 680px;
+    padding: 50px 55px;
+    background: linear-gradient(90deg, #ede8dc 0%, #f2ede2 80%, #f5f0e8 100%);
+    position: relative;
+    font-size: 15px;
+    line-height: 2;
+    color: #333;
+    text-align: justify;
+    transform: perspective(800px) rotateY(1deg);
+    transform-origin: right center;
+  }
+
+  /* Right Page */
+  .page-right {
+    width: 46vw;
+    max-width: 500px;
+    height: 82vh;
+    max-height: 680px;
+    padding: 50px 55px;
+    background: linear-gradient(270deg, #e8e3d6 0%, #f0ebe0 20%, #f5f0e8 100%);
+    position: relative;
+    font-size: 15px;
+    line-height: 2;
+    color: #333;
+    text-align: justify;
+    transform: perspective(800px) rotateY(-1deg);
+    transform-origin: left center;
+  }
+
+  /* Book Spine */
+  .book-spine {
+    width: 28px;
+    background: linear-gradient(90deg,
+      rgba(0,0,0,0.15) 0%,
+      rgba(0,0,0,0.06) 35%,
+      rgba(255,255,255,0.04) 50%,
+      rgba(0,0,0,0.06) 65%,
+      rgba(0,0,0,0.15) 100%
+    );
+  }
+
+  /* Corner ornaments */
+  .ornament {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    pointer-events: none;
+    opacity: 0.2;
+  }
+  .ornament-tl { top: 18px; left: 18px; }
+  .ornament-tl::before { content: ''; position: absolute; top: 0; left: 0; width: 28px; height: 28px; border-top: 2px solid #8b7355; border-left: 2px solid #8b7355; }
+  .ornament-tl::after { content: ''; position: absolute; top: 5px; left: 5px; width: 16px; height: 16px; border-top: 1px solid #8b7355; border-left: 1px solid #8b7355; }
+
+  .ornament-br { bottom: 18px; right: 18px; }
+  .ornament-br::before { content: ''; position: absolute; bottom: 0; right: 0; width: 28px; height: 28px; border-bottom: 2px solid #8b7355; border-right: 2px solid #8b7355; }
+  .ornament-br::after { content: ''; position: absolute; bottom: 5px; right: 5px; width: 16px; height: 16px; border-bottom: 1px solid #8b7355; border-right: 1px solid #8b7355; }
+
+  .ornament-tr { top: 18px; right: 18px; }
+  .ornament-tr::before { content: ''; position: absolute; top: 0; right: 0; width: 28px; height: 28px; border-top: 2px solid #8b7355; border-right: 2px solid #8b7355; }
+
+  .ornament-bl { bottom: 18px; left: 18px; }
+  .ornament-bl::before { content: ''; position: absolute; bottom: 0; left: 0; width: 28px; height: 28px; border-bottom: 2px solid #8b7355; border-left: 2px solid #8b7355; }
+
+  .page p { text-indent: 2em; margin-bottom: 0.4em; }
+
+  .page-number {
+    position: absolute;
+    bottom: 24px;
+    font-size: 13px;
+    color: #aaa;
+    font-family: 'Georgia', serif;
+  }
+  .page-left .page-number { left: 55px; }
+  .page-right .page-number { right: 55px; }
+
+  .highlight-yellow {
+    background: linear-gradient(180deg, transparent 55%, rgba(250,204,21,0.35) 55%);
+    padding: 0 2px;
+  }
+
+  /* ========== Bookmark Card - 浮在右页上方 ========== */
+  .bookmark-card {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    width: 190px;
+    background: #0a0a0a;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    z-index: 20;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+
+  .bookmark-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  }
+
+  .card-image {
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-image::before {
+    content: '';
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+    top: -40px;
+    right: -20px;
+  }
+
+  .card-image .butterfly {
+    font-size: 56px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+  }
+
+  .card-text {
+    padding: 14px 16px;
+  }
+
+  .card-quote {
+    font-size: 12px;
+    color: #ccc;
+    line-height: 1.6;
+    margin-bottom: 0;
+  }
+
+  .card-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid #222;
+  }
+
+  .brand-icon {
+    width: 26px;
+    height: 26px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  .brand-name { font-size: 14px; color: #fff; font-weight: 600; font-family: 'Georgia', serif; }
+  .brand-sub { font-size: 9px; color: #888; font-family: 'Microsoft YaHei', sans-serif; }
+
+  /* Book edge */
+  .book-edge {
+    position: absolute;
+    right: -14px;
+    top: 4px;
+    bottom: 4px;
+    width: 14px;
+    background: linear-gradient(90deg, #c4b8a8, #d4c8b8 30%, #c9bda8 50%, #bfaf98 70%, #a89880);
+    border-radius: 0 3px 3px 0;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.25);
+  }
+  .book-edge::before {
+    content: '';
+    position: absolute;
+    left: 2px; top: 5px; bottom: 5px; right: 1px;
+    background: repeating-linear-gradient(180deg, #e8e0d4 0px, #e8e0d4 1px, #ddd5c8 1px, #ddd5c8 2px);
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    height: 40px; background: #1a1a1a;
+    border-top: 1px solid #333;
+    display: flex; align-items: center;
+    padding: 0 20px; gap: 16px;
+  }
+  .progress-container { flex: 1; display: flex; align-items: center; gap: 12px; }
+  .progress-text { font-size: 11px; color: #888; font-family: 'Microsoft YaHei', sans-serif; }
+  .progress-bar { flex: 1; height: 3px; background: #333; border-radius: 2px; position: relative; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24); border-radius: 2px; width: 45%; }
+  .progress-fill::after { content: ''; position: absolute; right: -5px; top: -3.5px; width: 10px; height: 10px; background: #fbbf24; border-radius: 50%; box-shadow: 0 0 6px rgba(245,158,11,0.4); }
+  .page-nav { font-size: 11px; color: #666; font-family: 'Microsoft YaHei', sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- Left Toolbar -->
+<div class="toolbar-left">
+  <button class="tool-btn active">📑</button>
+  <button class="tool-btn">🔖</button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">✏️</button>
+  <button class="tool-btn">🔍</button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">🌙</button>
+  <button class="tool-btn">⚙️</button>
+  <div style="flex:1"></div>
+  <button class="tool-btn">📖</button>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="header">
+    <span class="book-title">边城</span>
+    <span class="chapter-info">第四章</span>
+    <div class="window-controls">
+      <span class="btn-minimize"></span>
+      <span class="btn-maximize"></span>
+      <span class="btn-close"></span>
+    </div>
+  </div>
+
+  <div class="book-container">
+    <div class="book-3d">
+      <div class="book-shadow"></div>
+
+      <div class="book-pages">
+
+        <!-- Left Page -->
+        <div class="page page-left">
+          <div class="ornament ornament-tl"></div>
+          <div class="ornament ornament-bl"></div>
+          <p>"你以为翠翠肯了我还会不肯吗？"</p>
+          <p>"不咧，人家以为这件事你老人家肯了，翠翠便无有不肯呢。"</p>
+          <p>"不能那么说，这是她的事啊！"</p>
+          <p>"便是她的事，可是必需老的作主，人家也仍然以为在日头月光下唱三年六个月的歌，还不如得伯伯说一句话好！"</p>
+          <p>"那么，我说，我们就这样办，等他从川东回来时要他同顺顺去说说明白。我呢，我也先问问翠翠；苦以为听了三年六个月的歌再跟那唱歌人走去有意思些，我就请你劝大老走他那弯弯曲曲的马路。"</p>
+          <p>"那好的。见了他我就说：'大老，笑话吗，我已说过了。真话呢，看你自己的命运去了。'当真看他的命运去了，不过我明白他的命运，还是在你老人家手上捏着的。"</p>
+          <p>"不是那么说！我若捏得定这件事，我马上就答应了。"</p>
+          <p>这里两人把话说妥后，就过另一处看一只顺顺新近买来的三舱船去了。河街上顺顺吊脚楼方面，却有了如下事情。</p>
+          <p>翠翠虽被那乡绅女孩喊到身边去坐，地位非常之好，从窗口望出去，河中一切朗然在望，然而心中可不安宁。挤在其他几个窗口看热闹的</p>
+          <span class="page-number">50</span>
+        </div>
+
+        <!-- Book Spine -->
+        <div class="book-spine"></div>
+
+        <!-- Right Page -->
+        <div class="page page-right">
+          <div class="ornament ornament-tr"></div>
+          <div class="ornament ornament-br"></div>
+
+          <p>常常把眼光从河中景物挪到这边几个人身上来。还有些人故意的事情样子，从楼这边走过那一边，事实上却全为得是好仔这方面几个人。翠翠心中老不自在，只想借故跑去。一会儿</p>
+          <p>响了，几只从对河取齐的船只，直向这方面划来。先是四条远，如四枝箭在水面射着，到了一半，已有两只船占先了些子，那两只船间便又有一只超过了并进的船只而前。看看门前时，第二次炮声又响，那船便胜利了。这时节胜利的已</p>
+          <p>街人所划的一只，各处便皆响着庆祝的小鞭炮。那船于是沿楼划去，鼓声蓬蓬作响，河边与吊脚楼各处，都同时呐喊表贺。翠翠眼见在船头站摇动小旗指挥进退头上包着红布的</p>
+          <p>那个年轻人，便是送酒葫芦到碧溪岨的二老，心中便印着三年前的旧事，"大鱼吃掉你！""吃掉吃掉，不用你管！""狗，狗，你也看人叫！"想起狗，翠翠才注意到自己身边那只黄狗，已不知跑到什么地方去，便离了座位，在楼上各处找寻她的黄狗，把船头人忘掉了。</p>
+          <p>她一面在人丛里找寻黄狗，一面听人家正说些什么话。</p>
+          <p>一个大脸妇人问："是谁家的人，坐到顺顺家当中窗口前的那块好地方？"</p>
+          <p>一个妇人就说："是营子上王乡绅家大姑娘，今天说是来看船，其实来看人，同时也让人看！人家命好，有福分坐那好地方！"</p>
+          <p>"看谁人？被谁看？"</p>
+          <span class="page-number">51</span>
+
+          <!-- Bookmark Card - 浮在右页上 -->
+          <div class="bookmark-card">
+            <div class="card-image">
+              <span class="butterfly">🦋</span>
+            </div>
+            <div class="card-text">
+              <div class="card-quote">谁的有着我有的思想<br>把你我彼此共同分享</div>
+            </div>
+            <div class="card-brand">
+              <div class="brand-icon">📖</div>
+              <div>
+                <div class="brand-name">iRead</div>
+                <div class="brand-sub">joade.com</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Book Edge -->
+      <div class="book-edge"></div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="progress-container">
+      <span class="progress-text">第 50-51 页 / 共 156 页</span>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">65%</span>
+    </div>
+    <span class="page-nav">◀ 上一页 | 下一页 ▶</span>
+  </div>
+</div>
+
+</body>
+</html>

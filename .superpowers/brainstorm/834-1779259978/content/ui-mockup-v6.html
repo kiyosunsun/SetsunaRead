@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SetsunaRead UI Mockup v6</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Serif SC', 'SimSun', serif;
+    background: #2a2a2a;
+    color: #fff;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+  }
+
+  /* Left Toolbar */
+  .toolbar-left {
+    width: 48px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #222 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+    gap: 4px;
+    z-index: 10;
+  }
+  .tool-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px; border: none;
+    background: transparent; color: #888;
+    cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .tool-btn:hover { background: #333; color: #fff; }
+  .tool-btn.active {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.3);
+  }
+  .toolbar-divider { width: 24px; height: 1px; background: #444; margin: 8px 0; }
+
+  /* Main */
+  .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .header {
+    height: 32px; background: #1e1e1e;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 16px; border-bottom: 1px solid #333;
+  }
+  .header .book-title { font-size: 12px; color: #aaa; font-family: 'Microsoft YaHei', sans-serif; }
+  .header .chapter-info { font-size: 11px; color: #666; font-family: 'Microsoft YaHei', sans-serif; }
+  .window-controls { display: flex; gap: 8px; }
+  .window-controls span { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; }
+  .btn-minimize { background: #fbbf24; }
+  .btn-maximize { background: #4ade80; }
+  .btn-close { background: #f87711; }
+
+  /* Book Container */
+  .book-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #2a2a2a;
+    position: relative;
+  }
+
+  /* 3D Book with perspective */
+  .book-3d {
+    position: relative;
+    display: flex;
+    perspective: 1200px;
+  }
+
+  /* ========== Left Page - curves into spine ========== */
+  .page-left-wrap {
+    position: relative;
+    transform: rotateY(2deg);
+    transform-origin: right center;
+  }
+
+  .page-left {
+    width: 46vw;
+    max-width: 500px;
+    height: 82vh;
+    max-height: 680px;
+    padding: 48px 52px 48px 52px;
+    background: linear-gradient(90deg, #f0ebe0 0%, #f5f0e8 85%, #ebe5d9 100%);
+    border-radius: 3px 0 0 3px;
+    position: relative;
+    font-size: 15px;
+    line-height: 2;
+    color: #333;
+    text-align: justify;
+    /* Shadow on the right edge where it meets the spine */
+    box-shadow:
+      inset -20px 0 30px -15px rgba(0,0,0,0.08),
+      -4px 4px 16px rgba(0,0,0,0.3);
+  }
+
+  /* ========== Right Page - curves into spine ========== */
+  .page-right-wrap {
+    position: relative;
+    transform: rotateY(-2deg);
+    transform-origin: left center;
+  }
+
+  .page-right {
+    width: 46vw;
+    max-width: 500px;
+    height: 82vh;
+    max-height: 680px;
+    padding: 48px 52px;
+    background: linear-gradient(270deg, #ebe5d9 0%, #f0ebe0 15%, #f5f0e8 100%);
+    border-radius: 0 3px 3px 0;
+    position: relative;
+    font-size: 15px;
+    line-height: 2;
+    color: #333;
+    text-align: justify;
+    /* Shadow on the left edge where it meets the spine */
+    box-shadow:
+      inset 20px 0 30px -15px rgba(0,0,0,0.08),
+      4px 4px 16px rgba(0,0,0,0.3);
+  }
+
+  /* ========== Book Spine - the crease/fold ========== */
+  .book-spine {
+    width: 40px;
+    position: relative;
+    z-index: 5;
+  }
+
+  /* Deep crease shadow */
+  .book-spine::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    background: linear-gradient(90deg,
+      rgba(0,0,0,0.2) 0%,
+      rgba(0,0,0,0.12) 20%,
+      rgba(0,0,0,0.06) 40%,
+      rgba(255,255,255,0.04) 50%,
+      rgba(0,0,0,0.06) 60%,
+      rgba(0,0,0,0.12) 80%,
+      rgba(0,0,0,0.2) 100%
+    );
+  }
+
+  /* Central fold line */
+  .book-spine::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg,
+      rgba(0,0,0,0.15) 0%,
+      rgba(0,0,0,0.08) 50%,
+      rgba(0,0,0,0.15) 100%
+    );
+    box-shadow:
+      -3px 0 6px rgba(0,0,0,0.06),
+      3px 0 6px rgba(0,0,0,0.06);
+  }
+
+  /* Page curve near spine - left page */
+  .page-left::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(270deg,
+      rgba(0,0,0,0.06) 0%,
+      transparent 100%
+    );
+    pointer-events: none;
+  }
+
+  /* Page curve near spine - right page */
+  .page-right::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 30px;
+    background: linear-gradient(90deg,
+      rgba(0,0,0,0.06) 0%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Page corner decorations */
+  .page-corner {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    opacity: 0.25;
+    pointer-events: none;
+  }
+  .corner-tl { top: 16px; left: 16px; border-top: 2px solid #8b7355; border-left: 2px solid #8b7355; }
+  .corner-tl::before { content: ''; position: absolute; top: 6px; left: 6px; width: 24px; height: 24px; border-top: 1px solid #8b7355; border-left: 1px solid #8b7355; }
+  .corner-bl { bottom: 16px; left: 16px; border-bottom: 2px solid #8b7355; border-left: 2px solid #8b7355; }
+  .corner-bl::before { content: ''; position: absolute; bottom: 6px; left: 6px; width: 24px; height: 24px; border-bottom: 1px solid #8b7355; border-left: 1px solid #8b7355; }
+  .corner-tr { top: 16px; right: 16px; border-top: 2px solid #8b7355; border-right: 2px solid #8b7355; }
+  .corner-tr::before { content: ''; position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-top: 1px solid #8b7355; border-right: 1px solid #8b7355; }
+  .corner-br { bottom: 16px; right: 16px; border-bottom: 2px solid #8b7355; border-right: 2px solid #8b7355; }
+  .corner-br::before { content: ''; position: absolute; bottom: 6px; right: 6px; width: 24px; height: 24px; border-bottom: 1px solid #8b7355; border-right: 1px solid #8b7355; }
+
+  .page p { text-indent: 2em; margin-bottom: 0.4em; }
+
+  .page-number {
+    position: absolute;
+    bottom: 22px;
+    font-size: 13px;
+    color: #aaa;
+    font-family: 'Georgia', serif;
+  }
+  .page-left .page-number { left: 52px; }
+  .page-right .page-number { right: 52px; }
+
+  .highlight-yellow {
+    background: linear-gradient(180deg, transparent 55%, rgba(250,204,21,0.35) 55%);
+    padding: 0 2px;
+  }
+
+  /* ========== Bookmark - 夹在书缝中的效果 ========== */
+  .bookmark-in-spine {
+    position: absolute;
+    z-index: 10;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .bookmark-in-spine:hover {
+    transform: translateY(-8px);
+  }
+
+  /* The bookmark ribbon that sits in the spine crease */
+  .bookmark-ribbon {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Top part visible above the book */
+  .bookmark-ribbon-top {
+    width: 24px;
+    border-radius: 3px 3px 0 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    position: relative;
+  }
+
+  /* The part hidden in the spine */
+  .bookmark-ribbon-spine {
+    width: 20px;
+    background: rgba(0,0,0,0.15);
+    position: relative;
+  }
+
+  /* Bottom tail that hangs below */
+  .bookmark-ribbon-tail {
+    width: 24px;
+    border-radius: 0 0 3px 3px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* V-cut at the bottom */
+  .bookmark-ribbon-tail::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+
+  .bookmark-label {
+    writing-mode: vertical-rl;
+    color: white;
+    font-size: 10px;
+    padding: 8px 3px;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Bookmark 1 - Red */
+  .bookmark-spine-1 {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .bookmark-spine-1 .bookmark-ribbon-top {
+    height: 80px;
+    background: linear-gradient(180deg, #e74c3c, #c0392b);
+  }
+  .bookmark-spine-1 .bookmark-ribbon-spine { height: 30px; }
+  .bookmark-spine-1 .bookmark-ribbon-tail {
+    height: 60px;
+    background: linear-gradient(180deg, #c0392b, #a93226);
+  }
+  .bookmark-spine-1 .bookmark-ribbon-tail::after { background: #a93226; }
+
+  /* Bookmark 2 - Gold (smaller, higher) */
+  .bookmark-spine-2 {
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .bookmark-spine-2 .bookmark-ribbon-top {
+    height: 50px;
+    background: linear-gradient(180deg, #f39c12, #d68910);
+  }
+  .bookmark-spine-2 .bookmark-ribbon-spine { height: 20px; }
+  .bookmark-spine-2 .bookmark-ribbon-tail {
+    height: 40px;
+    background: linear-gradient(180deg, #d68910, #b7950b);
+  }
+  .bookmark-spine-2 .bookmark-ribbon-tail::after { background: #b7950b; }
+
+  /* Bookmark tooltip */
+  .bookmark-spine-tooltip {
+    position: absolute;
+    left: calc(100% + 16px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 16px;
+    min-width: 200px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    z-index: 100;
+  }
+
+  .bookmark-in-spine:hover .bookmark-spine-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .bookmark-spine-tooltip::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: #1a1a1a;
+  }
+
+  .bst-title { font-size: 13px; color: #fff; margin-bottom: 6px; font-weight: 600; }
+  .bst-preview { font-size: 11px; color: #888; line-height: 1.5; margin-bottom: 10px; }
+  .bst-meta { display: flex; justify-content: space-between; font-size: 10px; color: #666; padding-top: 8px; border-top: 1px solid #333; }
+  .bst-page { background: rgba(245,158,11,0.15); color: #f59e0b; padding: 2px 8px; border-radius: 8px; }
+  .bst-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .bst-btn { flex: 1; padding: 6px; border-radius: 6px; border: none; font-size: 11px; cursor: pointer; }
+  .bst-btn-primary { background: #f59e0b; color: #fff; }
+  .bst-btn-secondary { background: #333; color: #999; }
+
+  /* Book edge (thickness) */
+  .book-edge {
+    position: absolute;
+    right: -16px;
+    top: 4px;
+    bottom: 4px;
+    width: 16px;
+    background: linear-gradient(90deg, #c4b8a8, #d4c8b8 30%, #c9bda8 50%, #bfaf98 70%, #a89880);
+    border-radius: 0 4px 4px 0;
+    box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+  }
+  .book-edge::before {
+    content: '';
+    position: absolute;
+    left: 2px; top: 6px; bottom: 6px; right: 1px;
+    background: repeating-linear-gradient(180deg, #e8e0d4 0px, #e8e0d4 1px, #ddd5c8 1px, #ddd5c8 2px);
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* Bottom bar */
+  .bottom-bar {
+    height: 40px; background: #1a1a1a;
+    border-top: 1px solid #333;
+    display: flex; align-items: center;
+    padding: 0 20px; gap: 16px;
+  }
+  .progress-container { flex: 1; display: flex; align-items: center; gap: 12px; }
+  .progress-text { font-size: 11px; color: #888; font-family: 'Microsoft YaHei', sans-serif; }
+  .progress-bar { flex: 1; height: 3px; background: #333; border-radius: 2px; position: relative; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #f59e0b, #fbbf24); border-radius: 2px; width: 45%; }
+  .progress-fill::after { content: ''; position: absolute; right: -5px; top: -3.5px; width: 10px; height: 10px; background: #fbbf24; border-radius: 50%; box-shadow: 0 0 6px rgba(245,158,11,0.4); }
+  .page-nav { font-size: 11px; color: #666; font-family: 'Microsoft YaHei', sans-serif; }
+</style>
+</head>
+<body>
+
+<!-- Left Toolbar -->
+<div class="toolbar-left">
+  <button class="tool-btn active">📑</button>
+  <button class="tool-btn">🔖</button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">✏️</button>
+  <button class="tool-btn">🔍</button>
+  <div class="toolbar-divider"></div>
+  <button class="tool-btn">🌙</button>
+  <button class="tool-btn">⚙️</button>
+  <div style="flex:1"></div>
+  <button class="tool-btn">📖</button>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="header">
+    <span class="book-title">边城</span>
+    <span class="chapter-info">第一章</span>
+    <div class="window-controls">
+      <span class="btn-minimize"></span>
+      <span class="btn-maximize"></span>
+      <span class="btn-close"></span>
+    </div>
+  </div>
+
+  <div class="book-container">
+    <div class="book-3d">
+
+      <!-- Left Page (curves into spine) -->
+      <div class="page-left-wrap">
+        <div class="page page-left">
+          <div class="page-corner corner-tl"></div>
+          <div class="page-corner corner-bl"></div>
+          <p>但不成，凡事求个心安理得，出气力不受酬谁好意思，不管如何还是有人把钱的。管船人却情不过，也为了心安起见，便把这些钱托人到茶峒去买茶叶和草烟，将茶峒出产的上等草烟，一扎一扎挂在自己腰带边，过渡的谁需要这东西必慷慨奉赠。</p>
+          <p>有时从神气上估计那远路人对于身边草烟引起了相当的注意时，便把一小束草烟扎到那人包袱上去，一面说，"不吸这个吗，这好的，这妙的，味道蛮好，送人也合式！"茶叶则在六月里放进大缸里去，用开水泡好，给过路人解渴。</p>
+          <p>管理这渡船的，就是住在塔下的那个老人。活了七十年，从二十岁起便守在这小溪边，五十年来不知把船来去渡了若干人。年纪虽那么老了，本来应当休息了，但天不许他休息，他仿佛便不能够同这一份生活离开。他从不思索自己的职务对于本人的意义，只是静静的很忠实的在那里活下去。</p>
+          <p>代替了天，使他在日头升起时，感到生活的力量，当日头落下时，又不至于思量与日头同时死去的，是那个伴在他身旁的女孩子。他唯一的朋友为一只渡船与一只黄狗，唯一的亲人便只那个女孩子。</p>
+          <span class="page-number">2</span>
+        </div>
+      </div>
+
+      <!-- Book Spine -->
+      <div class="book-spine">
+
+        <!-- Bookmark 1 - Red, stuck in spine -->
+        <div class="bookmark-in-spine bookmark-spine-1">
+          <div class="bookmark-ribbon">
+            <div class="bookmark-ribbon-top">
+              <span class="bookmark-label">黑黑的</span>
+            </div>
+            <div class="bookmark-ribbon-spine"></div>
+            <div class="bookmark-ribbon-tail"></div>
+          </div>
+          <div class="bookmark-spine-tooltip">
+            <div class="bst-title">把皮肤变得黑黑的</div>
+            <div class="bst-preview">翠翠在风日里长养着，把皮肤变得黑黑的，触目为青山绿水。</div>
+            <div class="bst-meta">
+              <span class="bst-page">第 3 页</span>
+              <span>05-20</span>
+            </div>
+            <div class="bst-actions">
+              <button class="bst-btn bst-btn-primary">跳转</button>
+              <button class="bst-btn bst-btn-secondary">删除</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bookmark 2 - Gold, stuck in spine -->
+        <div class="bookmark-in-spine bookmark-spine-2">
+          <div class="bookmark-ribbon">
+            <div class="bookmark-ribbon-top">
+              <span class="bookmark-label">亲人</span>
+            </div>
+            <div class="bookmark-ribbon-spine"></div>
+            <div class="bookmark-ribbon-tail"></div>
+          </div>
+          <div class="bookmark-spine-tooltip">
+            <div class="bst-title">唯一的亲人</div>
+            <div class="bst-preview">他唯一的朋友为一只渡船与一只黄狗，唯一的亲人便只那个女孩子。</div>
+            <div class="bst-meta">
+              <span class="bst-page">第 2 页</span>
+              <span>05-20</span>
+            </div>
+            <div class="bst-actions">
+              <button class="bst-btn bst-btn-primary">跳转</button>
+              <button class="bst-btn bst-btn-secondary">删除</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Page (curves into spine) -->
+      <div class="page-right-wrap">
+        <div class="page page-right">
+          <div class="page-corner corner-tr"></div>
+          <div class="page-corner corner-br"></div>
+          <p>小孩生下后，却到溪边吃了许多冷水，居然长大成人，一转眼便在水，因为余地有限，逼人而来，老船夫随便为这可渐进街后，河街上成城上，人人皆翠翠"。</p>
+          <p>翠翠在风日里长养着，<span class="highlight-yellow">把皮肤变得黑黑的</span>，触目为青山绿水，一对眸子清明如水晶。自然既长养她且教育她，为人天真活泼，处处俨然如一只小兽物。人又那么乖，如山头黄鹰一样，从不想到残忍事情，从不发愁，从不动气。</p>
+          <p>老船夫不论晴雨，必守在船头。有人过渡时，便略弯着腰，两手缘引了竹缆，把船横渡过小溪。有时疲倦了，躺在临溪大石上睡着了，人在隔岸招手喊过渡，翠翠不让祖父起身，就跳下船去，很敏捷的替祖父把路人渡过溪，一切皆溜刷在行，从不误事。</p>
+          <p>风日清和的天气，无人过渡，镇日长闲，祖父同翠翠便坐在门前大岩石上晒太阳。或把一段木头从高处向水中抛去，嗾使身边黄狗自岩石高处跃下，把木头衔回来。或翠翠与黄狗皆张着耳朵，听祖父说些城中多年以前的战争故事。</p>
+          <span class="page-number">3</span>
+        </div>
+      </div>
+
+      <!-- Book Edge -->
+      <div class="book-edge"></div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="progress-container">
+      <span class="progress-text">第 2-3 页 / 共 156 页</span>
+      <div class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <span class="progress-text">45%</span>
+    </div>
+    <span class="page-nav">◀ 上一页 | 下一页 ▶</span>
+  </div>
+</div>
+
+</body>
+</html>
