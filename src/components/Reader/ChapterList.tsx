@@ -112,7 +112,7 @@ const ChapterList: React.FC<ChapterListProps> = ({ isOpen, onClose, chapters }) 
         {/* ---- Header ---- */}
         <div className={cn('flex items-center justify-between px-5 py-4 border-b shrink-0', borderClass)}>
           <h2 className={cn('text-lg font-semibold', textClass)}>
-            Chapters
+            章节目录
             {chapters.length > 0 && (
               <span className={cn('ml-2 text-sm font-normal', textMutedClass)}>
                 ({chapters.length})
@@ -152,7 +152,7 @@ const ChapterList: React.FC<ChapterListProps> = ({ isOpen, onClose, chapters }) 
                 />
               </svg>
               <p className={cn('text-sm', textMutedClass)}>
-                No chapters detected in this book.
+                未检测到章节
               </p>
             </div>
           ) : (

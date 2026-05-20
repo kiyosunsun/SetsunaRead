@@ -135,7 +135,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
       >
         {/* ---- Header ---- */}
         <div className={cn('flex items-center justify-between px-5 py-4 border-b shrink-0', borderClass)}>
-          <h2 className={cn('text-lg font-semibold', textClass)}>Search</h2>
+          <h2 className={cn('text-lg font-semibold', textClass)}>搜索</h2>
           <button
             onClick={onClose}
             className={cn(
@@ -170,7 +170,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
               type="text"
               value={query}
               onChange={handleInputChange}
-              placeholder="Search in book..."
+              placeholder="搜索书中内容..."
               className={cn(
                 'w-full pl-10 pr-10 py-2.5 rounded-lg border text-sm outline-none transition-colors',
                 inputBgClass,
@@ -203,10 +203,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
             <div className="flex items-center justify-between mt-2">
               <span className={cn('text-xs', textMutedClass)}>
                 {isSearching
-                  ? 'Searching...'
+                  ? '搜索中...'
                   : results.length === 0
-                    ? 'No results found'
-                    : `${results.length} result${results.length !== 1 ? 's' : ''} found`}
+                    ? '未找到结果'
+                    : `找到 ${results.length} 个结果`}
               </span>
               {results.length > 0 && (
                 <div className="flex items-center gap-1">
@@ -263,10 +263,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                 />
               </svg>
               <p className={cn('text-sm', textMutedClass)}>
-                Type to search through the book.
+                输入关键词搜索书中内容
               </p>
               <p className={cn('text-xs mt-2', textMutedClass)}>
-                Press Enter for next result, Shift+Enter for previous.
+                按 Enter 下一个，Shift+Enter 上一个
               </p>
             </div>
           ) : results.length === 0 && !isSearching ? (
@@ -285,7 +285,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                 />
               </svg>
               <p className={cn('text-sm', textMutedClass)}>
-                No results found for "{query}"
+                未找到"{query}"的相关结果
               </p>
             </div>
           ) : (
@@ -321,7 +321,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                                 : 'bg-gray-200 text-gray-700',
                           )}
                         >
-                          Page {result.pageNumber}
+                          第 {result.pageNumber} 页
                         </span>
                       </div>
 
@@ -356,7 +356,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
         {query && results.length > 0 && (
           <div className={cn('px-5 py-3 border-t text-center shrink-0', borderClass)}>
             <span className={cn('text-xs', textMutedClass)}>
-              Enter next / Shift+Enter previous / Esc close
+              Enter 下一个 / Shift+Enter 上一个 / Esc 关闭
             </span>
           </div>
         )}

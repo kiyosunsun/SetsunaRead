@@ -29,9 +29,9 @@ interface ToolbarProps {
    Reading Mode Options
    --------------------------------------------------------------------------- */
 const READING_MODES: { value: ReadingMode; label: string; icon: string }[] = [
-  { value: 'dual', label: 'Dual', icon: '📚' },
-  { value: 'single', label: 'Single', icon: '📄' },
-  { value: 'scroll', label: 'Scroll', icon: '📜' },
+  { value: 'dual', label: '双页', icon: '📚' },
+  { value: 'single', label: '单页', icon: '📄' },
+  { value: 'scroll', label: '滚动', icon: '📜' },
 ];
 
 /* ---------------------------------------------------------------------------

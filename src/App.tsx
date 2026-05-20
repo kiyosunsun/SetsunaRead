@@ -113,7 +113,7 @@ function App() {
 
     const handleImportBook = async (file: File) => {
       if (!file.name.endsWith('.txt')) {
-        alert('Only .txt files are supported.');
+        alert('仅支持 .txt 文件格式。');
         return;
       }
       const buffer = await file.arrayBuffer();
@@ -151,8 +151,8 @@ function App() {
             backgroundColor: nightMode ? 'rgba(38,38,38,0.8)' : 'rgba(255,255,255,0.8)',
             color: nightMode ? 'rgba(212,197,169,0.7)' : 'rgba(0,0,0,0.6)',
           }}
-          title="Back to bookshelf"
-          aria-label="Back to bookshelf"
+          title="返回书架"
+          aria-label="返回书架"
         >
           <svg
             className="w-5 h-5"

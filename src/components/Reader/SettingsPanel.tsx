@@ -17,19 +17,19 @@ interface SettingsPanelProps {
    Maps task requirements (yellow, white, green, brown) to store values.
    --------------------------------------------------------------------------- */
 const PAPER_OPTIONS: { value: PaperBackground; label: string }[] = [
-  { value: 'default', label: 'White' },
-  { value: 'sepia', label: 'Yellow' },
-  { value: 'green', label: 'Green' },
-  { value: 'pink', label: 'Brown' },
+  { value: 'default', label: '纯白' },
+  { value: 'sepia', label: '米黄' },
+  { value: 'green', label: '护眼绿' },
+  { value: 'pink', label: '牛皮纸' },
 ];
 
 /* ---------------------------------------------------------------------------
    Flip Animation Options
    --------------------------------------------------------------------------- */
 const FLIP_OPTIONS: { value: FlipAnimation; label: string }[] = [
-  { value: 'flip', label: 'Flip' },
-  { value: 'slide', label: 'Slide' },
-  { value: 'fade', label: 'Fade' },
+  { value: 'flip', label: '翻页' },
+  { value: 'slide', label: '滑动' },
+  { value: 'fade', label: '淡入' },
 ];
 
 /* ---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
       >
         {/* ---- Header ---- */}
         <div className={cn('flex items-center justify-between px-5 py-4 border-b', borderClass)}>
-          <h2 className={cn('text-lg font-semibold', textClass)}>Reading Settings</h2>
+          <h2 className={cn('text-lg font-semibold', textClass)}>阅读设置</h2>
           <button
             onClick={onClose}
             className={cn(
@@ -106,7 +106,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
           {/* ---- Paper Background ---- */}
           <section>
             <label className={cn('block text-sm font-medium mb-2', textClass)}>
-              Paper Background
+              纸张背景
             </label>
             <div className="flex gap-2">
               {PAPER_OPTIONS.map((option) => (
@@ -137,7 +137,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
           {/* ---- Font Size ---- */}
           <section>
             <div className="flex items-center justify-between mb-2">
-              <label className={cn('text-sm font-medium', textClass)}>Font Size</label>
+              <label className={cn('text-sm font-medium', textClass)}>字体大小</label>
               <span className={cn('text-sm font-mono', textMutedClass)}>{fontSize}px</span>
             </div>
             <div className={cn('px-3 py-2 rounded-lg', sectionBgClass)}>
@@ -164,7 +164,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
           {/* ---- Line Height ---- */}
           <section>
             <div className="flex items-center justify-between mb-2">
-              <label className={cn('text-sm font-medium', textClass)}>Line Height</label>
+              <label className={cn('text-sm font-medium', textClass)}>行间距</label>
               <span className={cn('text-sm font-mono', textMutedClass)}>{lineHeight.toFixed(1)}</span>
             </div>
             <div className={cn('px-3 py-2 rounded-lg', sectionBgClass)}>
@@ -190,7 +190,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
 
           {/* ---- Night Mode ---- */}
           <section className="flex items-center justify-between">
-            <label className={cn('text-sm font-medium', textClass)}>Night Mode</label>
+            <label className={cn('text-sm font-medium', textClass)}>夜间模式</label>
             <button
               onClick={toggleNightMode}
               className={cn(
@@ -213,7 +213,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
           {/* ---- Flip Animation ---- */}
           <section>
             <label className={cn('block text-sm font-medium mb-2', textClass)}>
-              Flip Animation
+              翻页动画
             </label>
             <div className="flex gap-2">
               {FLIP_OPTIONS.map((option) => (

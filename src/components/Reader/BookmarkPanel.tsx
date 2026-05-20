@@ -113,7 +113,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
         {/* ---- Header ---- */}
         <div className={cn('flex items-center justify-between px-5 py-4 border-b shrink-0', borderClass)}>
           <h2 className={cn('text-lg font-semibold', textClass)}>
-            Bookmarks
+            书签
             {bookBookmarks.length > 0 && (
               <span className={cn('ml-2 text-sm font-normal', textMutedClass)}>
                 ({bookBookmarks.length})
@@ -147,7 +147,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                   ? cn('opacity-50 cursor-not-allowed', btnBgClass, textMutedClass)
                   : cn('bg-amber-600 text-white hover:bg-amber-700'),
               )}
-              title={isCurrentPageBookmarked ? 'Page already bookmarked' : 'Bookmark current page'}
+              title={isCurrentPageBookmarked ? '当前页已添加书签' : '添加书签到当前页'}
             >
               <svg
                 className="w-4 h-4"
@@ -159,8 +159,8 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
               </svg>
               {isCurrentPageBookmarked
-                ? `Bookmarked (Page ${currentPage + 1})`
-                : `Bookmark Page ${currentPage + 1}`}
+                ? `已添加书签 (第 ${currentPage + 1} 页)`
+                : `添加书签 (第 ${currentPage + 1} 页)`}
             </button>
           </div>
         )}
@@ -183,7 +183,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                 />
               </svg>
               <p className={cn('text-sm', textMutedClass)}>
-                Open a book to add bookmarks.
+                请先打开一本书来添加书签
               </p>
             </div>
           ) : bookBookmarks.length === 0 ? (
@@ -202,7 +202,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                 />
               </svg>
               <p className={cn('text-sm', textMutedClass)}>
-                No bookmarks yet. Tap the button above to bookmark the current page.
+                暂无书签，点击上方按钮添加
               </p>
             </div>
           ) : (
@@ -273,7 +273,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
         {bookId && totalPages > 0 && (
           <div className={cn('px-5 py-3 border-t text-center shrink-0', borderClass)}>
             <span className={cn('text-xs', textMutedClass)}>
-              Currently on page {currentPage + 1} of {totalPages}
+              当前第 {currentPage + 1} 页，共 {totalPages} 页
             </span>
           </div>
         )}

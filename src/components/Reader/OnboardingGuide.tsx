@@ -90,38 +90,38 @@ function StartIcon() {
 function getSteps(): OnboardingStep[] {
   return [
     {
-      title: 'Welcome to SetsunaRead',
-      description: 'A beautiful, distraction-free reading experience for your favorite books. Let us show you around.',
+      title: '欢迎使用 SetsunaRead',
+      description: '一个精美的无干扰阅读体验，让你沉浸在书籍的世界中。让我们来介绍一下。',
       icon: <WelcomeIcon />,
       gradient: 'from-amber-500/20 via-orange-500/20 to-rose-500/20',
     },
     {
-      title: 'Import Your Books',
-      description: 'Click the "Import" button on the bookshelf to add .txt files. We support multiple encodings including UTF-8, GBK, and Big5.',
+      title: '导入你的书籍',
+      description: '点击书架上的"导入"按钮来添加 .txt 文件。我们支持多种编码格式，包括 UTF-8、GBK 和 Big5。',
       icon: <ImportIcon />,
       gradient: 'from-emerald-500/20 via-teal-500/20 to-cyan-500/20',
     },
     {
-      title: 'Dual Page Mode',
-      description: 'Enjoy a book-like reading experience with dual page view. Switch between Dual, Single, and Scroll modes from the toolbar.',
+      title: '仿真双页模式',
+      description: '享受类似实体书的双页阅读体验。你可以在工具栏中切换双页、单页和滚动模式。',
       icon: <DualPageIcon />,
       gradient: 'from-violet-500/20 via-purple-500/20 to-indigo-500/20',
     },
     {
-      title: 'Customize Settings',
-      description: 'Adjust font size, line height, paper background, and flip animation to match your reading preferences.',
+      title: '自定义设置',
+      description: '调整字体大小、行间距、纸张背景和翻页动画，打造属于你的阅读体验。',
       icon: <SettingsIcon />,
       gradient: 'from-blue-500/20 via-sky-500/20 to-cyan-500/20',
     },
     {
-      title: 'Bookmarks & Search',
-      description: 'Save your place with bookmarks and quickly find passages using the built-in search feature.',
+      title: '书签与搜索',
+      description: '使用书签保存你的阅读位置，通过内置搜索功能快速查找内容。',
       icon: <BookmarksIcon />,
       gradient: 'from-rose-500/20 via-pink-500/20 to-fuchsia-500/20',
     },
     {
-      title: 'Start Reading',
-      description: 'You are all set! Import your first book and begin your reading journey. Happy reading!',
+      title: '开始阅读',
+      description: '一切准备就绪！导入你的第一本书，开始你的阅读之旅吧。',
       icon: <StartIcon />,
       gradient: 'from-amber-500/20 via-yellow-500/20 to-orange-500/20',
     },
@@ -236,7 +236,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({
                   btnSecondaryClass,
                 )}
               >
-                Skip
+                跳过
               </button>
             ) : (
               <button
@@ -246,7 +246,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({
                   btnSecondaryClass,
                 )}
               >
-                Previous
+                上一步
               </button>
             )}
           </div>
@@ -261,7 +261,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({
                   btnPrimaryClass,
                 )}
               >
-                Get Started
+                开始阅读
               </button>
             ) : (
               <button
@@ -271,7 +271,7 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({
                   btnPrimaryClass,
                 )}
               >
-                Next
+                下一步
               </button>
             )}
           </div>
