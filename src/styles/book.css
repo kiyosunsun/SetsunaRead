@@ -1,0 +1,182 @@
+/* ==========================================================================
+   SetsunaRead - Book Styling
+   Paper textures, spine shadows, filigree ornaments, bookmarks, and night mode
+   ========================================================================== */
+
+/* ---------------------------------------------------------------------------
+   Paper Texture - SVG noise overlay for realistic paper feel
+   Uses an inline SVG data URI to generate subtle noise grain
+   --------------------------------------------------------------------------- */
+.paper-texture {
+  position: relative;
+}
+
+.paper-texture::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  z-index: 1;
+}
+
+/* ---------------------------------------------------------------------------
+   Book Spine Shadows - Inner shadows that simulate the binding gutter
+   Applied to left and right pages of a spread respectively
+   --------------------------------------------------------------------------- */
+.book-spine-shadow-left {
+  box-shadow:
+    inset 12px 0 20px -8px rgba(0, 0, 0, 0.25),
+    inset 2px 0 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+.book-spine-shadow-right {
+  box-shadow:
+    inset -12px 0 20px -8px rgba(0, 0, 0, 0.25),
+    inset -2px 0 4px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* ---------------------------------------------------------------------------
+   Page Curl - Corner curl effect on the bottom-right of right-hand pages
+   Uses a pseudo-element with a diagonal gradient to simulate a lifted corner
+   --------------------------------------------------------------------------- */
+.page-curl {
+  position: relative;
+}
+
+.page-curl::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(
+    225deg,
+    rgba(0, 0, 0, 0.08) 0%,
+    rgba(0, 0, 0, 0.02) 40%,
+    transparent 50%
+  );
+  pointer-events: none;
+  border-radius: 0 0 0 0;
+  z-index: 2;
+  clip-path: polygon(100% 0%, 100% 100%, 0% 100%);
+}
+
+/* ---------------------------------------------------------------------------
+   Filigree - Victorian ornamental corner decorations
+   Positioned absolutely in each corner of the page
+   --------------------------------------------------------------------------- */
+.filigree {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.18;
+  z-index: 2;
+}
+
+.filigree-tl {
+  top: 12px;
+  left: 12px;
+}
+
+.filigree-tr {
+  top: 12px;
+  right: 12px;
+  transform: scaleX(-1);
+}
+
+.filigree-bl {
+  bottom: 12px;
+  left: 12px;
+  transform: scaleY(-1);
+}
+
+.filigree-br {
+  bottom: 12px;
+  right: 12px;
+  transform: scale(-1, -1);
+}
+
+/* ---------------------------------------------------------------------------
+   Bookmark Clip & Ribbon
+   The clip sits at the top edge of the page; the ribbon hangs down
+   --------------------------------------------------------------------------- */
+.bookmark-clip {
+  position: absolute;
+  top: -4px;
+  width: 20px;
+  height: 12px;
+  background: #b8860b;
+  border-radius: 0 0 4px 4px;
+  z-index: 5;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+
+.bookmark-ribbon {
+  position: absolute;
+  top: 8px;
+  width: 18px;
+  height: 64px;
+  z-index: 4;
+  background: linear-gradient(
+    180deg,
+    #c0392b 0%,
+    #e74c3c 60%,
+    #c0392b 100%
+  );
+  clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 50% 100%, 0% 85%);
+  box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------------------------------------------------------------------------
+   Night Mode - Dark theme overrides for comfortable nighttime reading
+   Inverts paper colors, reduces brightness, adjusts text and shadows
+   --------------------------------------------------------------------------- */
+.night-mode {
+  background-color: #1a1a2e !important;
+  color: #d4c5a9 !important;
+}
+
+.night-mode .paper-texture::before {
+  opacity: 0.02;
+}
+
+.night-mode .book-spine-shadow-left {
+  box-shadow:
+    inset 12px 0 20px -8px rgba(0, 0, 0, 0.5),
+    inset 2px 0 4px -1px rgba(0, 0, 0, 0.3);
+}
+
+.night-mode .book-spine-shadow-right {
+  box-shadow:
+    inset -12px 0 20px -8px rgba(0, 0, 0, 0.5),
+    inset -2px 0 4px -1px rgba(0, 0, 0, 0.3);
+}
+
+.night-mode .filigree {
+  opacity: 0.08;
+}
+
+.night-mode .page-curl::after {
+  background: linear-gradient(
+    225deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.01) 40%,
+    transparent 50%
+  );
+}
+
+.night-mode .bookmark-clip {
+  background: #8b6914;
+}
+
+.night-mode .bookmark-ribbon {
+  background: linear-gradient(
+    180deg,
+    #8b2020 0%,
+    #a52a2a 60%,
+    #8b2020 100%
+  );
+}
