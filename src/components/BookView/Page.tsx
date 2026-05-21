@@ -3,42 +3,16 @@ import { useSettingsStore, PAPER_COLORS } from '../../stores/settingsStore';
 import '../../styles/book.css';
 
 /* ---------------------------------------------------------------------------
-   SVG Filigree Corner Ornament
-   A reusable Victorian-style decorative corner rendered as inline SVG
+   Han-style Corner Ornament
+   A reusable Chinese-style decorative corner rendered as inline SVG
    --------------------------------------------------------------------------- */
-const FiligreeSVG: React.FC = () => (
-  <svg
-    width="48"
-    height="48"
-    viewBox="0 0 48 48"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M4 4C4 4 8 14 14 20C20 26 30 32 44 36"
-      stroke="currentColor"
-      strokeWidth="1.2"
-      strokeLinecap="round"
-      fill="none"
-    />
-    <path
-      d="M4 4C4 4 14 8 20 14C26 20 32 30 36 44"
-      stroke="currentColor"
-      strokeWidth="1.2"
-      strokeLinecap="round"
-      fill="none"
-    />
-    <path
-      d="M4 4C4 4 10 10 16 14C22 18 28 24 32 36"
-      stroke="currentColor"
-      strokeWidth="0.8"
-      strokeLinecap="round"
-      fill="none"
-      opacity="0.6"
-    />
-    <circle cx="4" cy="4" r="2" fill="currentColor" opacity="0.5" />
-    <circle cx="14" cy="20" r="1.2" fill="currentColor" opacity="0.3" />
-    <circle cx="20" cy="14" r="1.2" fill="currentColor" opacity="0.3" />
+const HanCornerSVG: React.FC = () => (
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M6 10c6 0 10-4 10-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.65"/>
+    <path d="M6 16c10 0 16-6 16-6" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.55"/>
+    <path d="M6 22c12 0 20-8 20-8" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" opacity="0.45"/>
+    <path d="M6 6h18c6 0 10 4 10 10v18" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" opacity="0.35"/>
+    <path d="M14 6v6M20 6v6M26 6v6" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" opacity="0.28"/>
   </svg>
 );
 
@@ -90,18 +64,18 @@ const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft }) => {
       className={`relative overflow-hidden ${spineClass} ${curlClass} paper-texture`}
       style={pageStyle}
     >
-      {/* Filigree corner ornaments */}
-      <div className="filigree filigree-tl text-amber-800">
-        <FiligreeSVG />
+      {/* Han-style corner ornaments */}
+      <div className="filigree filigree-tl text-[#8b6914]">
+        <HanCornerSVG />
       </div>
-      <div className="filigree filigree-tr text-amber-800">
-        <FiligreeSVG />
+      <div className="filigree filigree-tr text-[#8b6914]">
+        <HanCornerSVG />
       </div>
-      <div className="filigree filigree-bl text-amber-800">
-        <FiligreeSVG />
+      <div className="filigree filigree-bl text-[#8b6914]">
+        <HanCornerSVG />
       </div>
-      <div className="filigree filigree-br text-amber-800">
-        <FiligreeSVG />
+      <div className="filigree filigree-br text-[#8b6914]">
+        <HanCornerSVG />
       </div>
 
       {/* Main content area */}
