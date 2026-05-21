@@ -3,6 +3,38 @@
    Paper textures, spine shadows, filigree ornaments, bookmarks, and night mode
    ========================================================================== */
 
+:root {
+  /* 汉风配色 Token（只做变量声明，不直接改现有选择器） */
+  --han-paper: #f6f1e3;
+  --han-paper-warm: #efe4c7;
+  --han-ink: #1f2328;
+  --han-ink-soft: rgba(31, 35, 40, 0.72);
+
+  --han-spine-shadow-strong: rgba(0, 0, 0, 0.25);
+  --han-spine-shadow-soft: rgba(0, 0, 0, 0.1);
+
+  --han-grain-opacity: 0.04;
+
+  --han-filigree-opacity: 0.18;
+
+  --han-bookmark-clip: #b8860b;
+  --han-bookmark-ribbon-1: #c0392b;
+  --han-bookmark-ribbon-2: #e74c3c;
+
+  /* 夜间模式 Token */
+  --han-night-bg: #1a1a2e;
+  --han-night-text: #d4c5a9;
+  --han-night-grain-opacity: 0.02;
+  --han-night-spine-shadow-strong: rgba(0, 0, 0, 0.5);
+  --han-night-spine-shadow-soft: rgba(0, 0, 0, 0.3);
+  --han-night-filigree-opacity: 0.08;
+  --han-night-curl-1: rgba(255, 255, 255, 0.04);
+  --han-night-curl-2: rgba(255, 255, 255, 0.01);
+  --han-night-bookmark-clip: #8b6914;
+  --han-night-bookmark-ribbon-1: #8b2020;
+  --han-night-bookmark-ribbon-2: #a52a2a;
+}
+
 /* ---------------------------------------------------------------------------
    Paper Texture - SVG noise overlay for realistic paper feel
    Uses an inline SVG data URI to generate subtle noise grain
