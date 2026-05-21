@@ -2,8 +2,10 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Book, Page } from '../types/book';
 
+type PersistedBook = Omit<Book, 'content'>;
+
 interface BookState {
-  books: Book[];
+  books: PersistedBook[];
   currentBook: Book | null;
   currentPage: number;
   totalPages: number;
@@ -32,7 +34,9 @@ export const useBookStore = create<BookState>()(
         set((state) => {
           const exists = state.books.some((b) => b.id === book.id);
           if (exists) return state;
-          return { books: [...state.books, book] };
+
+          const { content, ...persisted } = book;
+          return { books: [...state.books, persisted] };
         });
       },
 
@@ -95,6 +99,7 @@ export const useBookStore = create<BookState>()(
     }),
     {
       name: 'setsuna-book-store',
+      partialize: (state) => ({ books: state.books }),
     },
   ),
 );
