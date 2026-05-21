@@ -23,28 +23,22 @@ const ScrollView: React.FC = () => {
     );
   }
 
-  const bgClass = nightMode ? 'bg-neutral-950' : 'bg-neutral-800';
-
   return (
-    <div
-      className={`w-full h-full overflow-y-auto select-none ${bgClass}`}
-      style={{ scrollBehavior: 'smooth' }}
-    >
+    <div className="reader-desk w-full h-full overflow-y-auto select-none" style={{ scrollBehavior: 'smooth' }}>
       <div className="flex flex-col items-center gap-10 py-12">
         {pages.map((page, index) => (
           <React.Fragment key={page.pageNumber}>
             {/* Single page with drop shadow */}
             <div
-              className="relative overflow-hidden"
+              className="reader-book relative overflow-hidden"
               style={{
                 width: '480px',
                 height: '660px',
                 borderRadius: '6px',
-                boxShadow:
-                  '0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3)',
               }}
             >
               <Page
+                className="reader-paper"
                 content={page.content}
                 pageNumber={page.pageNumber}
                 isLeft={false}
@@ -56,28 +50,20 @@ const ScrollView: React.FC = () => {
               <div
                 className="flex items-center gap-4 select-none"
                 style={{
-                  color: nightMode
-                    ? 'rgba(212,197,169,0.35)'
-                    : 'rgba(255,255,255,0.35)',
+                  color: nightMode ? 'rgba(212,197,169,0.35)' : 'rgba(0,0,0,0.35)',
                 }}
               >
                 <div
                   className="h-px w-12"
                   style={{
-                    background: nightMode
-                      ? 'rgba(212,197,169,0.2)'
-                      : 'rgba(255,255,255,0.2)',
+                    background: nightMode ? 'rgba(212,197,169,0.2)' : 'rgba(0,0,0,0.2)',
                   }}
                 />
-                <span className="text-xs tracking-widest uppercase">
-                  {page.pageNumber}
-                </span>
+                <span className="text-xs tracking-widest uppercase">{page.pageNumber}</span>
                 <div
                   className="h-px w-12"
                   style={{
-                    background: nightMode
-                      ? 'rgba(212,197,169,0.2)'
-                      : 'rgba(255,255,255,0.2)',
+                    background: nightMode ? 'rgba(212,197,169,0.2)' : 'rgba(0,0,0,0.2)',
                   }}
                 />
               </div>
@@ -89,9 +75,7 @@ const ScrollView: React.FC = () => {
         <div
           className="text-sm tracking-wide select-none py-4"
           style={{
-            color: nightMode
-              ? 'rgba(212,197,169,0.3)'
-              : 'rgba(255,255,255,0.3)',
+            color: nightMode ? 'rgba(212,197,169,0.3)' : 'rgba(0,0,0,0.3)',
           }}
         >
           End of book

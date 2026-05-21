@@ -35,6 +35,34 @@
   --han-night-bookmark-ribbon-2: #a52a2a;
 }
 
+/* ---- Reader desk / book / paper (token-driven) ---- */
+.reader-desk {
+  position: relative;
+  background: var(--desk-bg);
+}
+
+.reader-desk::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1200px 600px at 50% 20%, rgba(255, 255, 255, 0.06), transparent 60%),
+    radial-gradient(900px 500px at 30% 80%, rgba(0, 0, 0, 0.12), transparent 55%);
+  opacity: 0.85;
+}
+
+.reader-book {
+  box-shadow: var(--shadow-book);
+}
+
+.reader-paper {
+  background: var(--paper-bg);
+  color: var(--ink-primary);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.10);
+}
+
 /* ---------------------------------------------------------------------------
    Paper Texture - SVG noise overlay for realistic paper feel
    Uses an inline SVG data URI to generate subtle noise grain

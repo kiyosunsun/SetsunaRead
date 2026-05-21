@@ -118,20 +118,15 @@ const DualPage: React.FC = () => {
     );
   }
 
-  /* ---- Dark surface behind the book for contrast ---- */
-  const bgClass = nightMode
-    ? 'bg-neutral-950'
-    : 'bg-neutral-800';
-
   return (
     <div
-      className={`flex items-center justify-center w-full h-full select-none ${bgClass}`}
+      className="reader-desk flex items-center justify-center w-full h-full select-none"
       style={{ perspective: '1800px' }}
       onClick={handleContainerClick}
     >
       {/* 3D container that gives the open-book illusion */}
       <div
-        className="flex items-stretch relative"
+        className="reader-book flex items-stretch relative"
         style={{
           transformStyle: 'preserve-3d',
           transform: 'rotateY(-2deg) rotateX(1deg)',
@@ -154,6 +149,7 @@ const DualPage: React.FC = () => {
           <div className={`page-flip-layer ${leftAnimClass}`}>
             {leftPage ? (
               <Page
+                className="reader-paper"
                 content={leftPage.content}
                 pageNumber={leftPage.pageNumber}
                 isLeft={true}
@@ -212,6 +208,7 @@ const DualPage: React.FC = () => {
           <div className={`page-flip-layer ${rightAnimClass}`}>
             {rightPage ? (
               <Page
+                className="reader-paper"
                 content={rightPage.content}
                 pageNumber={rightPage.pageNumber}
                 isLeft={false}

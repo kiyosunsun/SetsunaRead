@@ -26,6 +26,7 @@ interface PageProps {
   pageNumber: number;
   /** Whether this is a left-hand page in a two-page spread */
   isLeft: boolean;
+  className?: string;
 }
 
 /* ---------------------------------------------------------------------------
@@ -33,7 +34,7 @@ interface PageProps {
    Renders a single book page with paper texture, filigree corners,
    spine shadow, page curl (right pages), and configurable typography.
    --------------------------------------------------------------------------- */
-const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft }) => {
+const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft, className }) => {
   const { paperBackground, fontSize, fontFamily, lineHeight, nightMode } =
     useSettingsStore();
 
@@ -60,8 +61,8 @@ const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft }) => {
   const curlClass = !isLeft ? 'page-curl' : '';
 
   return (
-    <div
-      className={`relative overflow-hidden ${spineClass} ${curlClass} paper-texture`}
+        <div
+      className={`relative overflow-hidden ${spineClass} ${curlClass} paper-texture ${className ?? ''}`}
       style={pageStyle}
     >
       {/* Han-style corner ornaments */}

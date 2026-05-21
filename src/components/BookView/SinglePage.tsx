@@ -50,25 +50,21 @@ const SinglePage: React.FC = () => {
     );
   }
 
-  const bgClass = nightMode ? 'bg-neutral-950' : 'bg-neutral-800';
-
   return (
-    <div
-      className={`flex items-center justify-center w-full h-full select-none ${bgClass}`}
-    >
+    <div className="reader-desk flex items-center justify-center w-full h-full select-none">
       {/* Centered page with drop shadow */}
       <div
-        className="relative overflow-hidden"
+        className="reader-book relative overflow-hidden"
         style={{
           width: '480px',
           height: '660px',
           borderRadius: '6px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.3)',
           transition: 'box-shadow 0.3s ease',
         }}
       >
         {pageData ? (
           <Page
+            className="reader-paper"
             content={pageData.content}
             pageNumber={pageData.pageNumber}
             isLeft={false}
@@ -82,10 +78,10 @@ const SinglePage: React.FC = () => {
       <div
         className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm tracking-wide select-none"
         style={{
-          color: nightMode ? 'rgba(212,197,169,0.45)' : 'rgba(255,255,255,0.45)',
+          color: nightMode ? 'rgba(212,197,169,0.45)' : 'rgba(0,0,0,0.45)',
         }}
       >
-        {pageData?.pageNumber ?? '?'} &ndash; {pages.length}
+        {pageData?.pageNumber ?? '?'}  {pages.length}
       </div>
     </div>
   );
