@@ -8,7 +8,7 @@ import ChapterList from './components/Reader/ChapterList';
 import BookmarkPanel from './components/Reader/BookmarkPanel';
 import SearchPanel from './components/Reader/SearchPanel';
 import Bookshelf from './components/Reader/Bookshelf';
-import ImportProgressOverlay from './components/Reader/ImportProgressOverlay';
+import OnboardingGuide from './components/Reader/OnboardingGuide';
 import { useBookParser } from './hooks/useBookParser';
 import { useOnboarding } from './hooks/useOnboarding';
 import { useBookStore } from './stores/bookStore';
