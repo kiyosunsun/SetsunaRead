@@ -145,7 +145,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                 'w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors',
                 isCurrentPageBookmarked
                   ? cn('opacity-50 cursor-not-allowed', btnBgClass, textMutedClass)
-                  : cn('bg-amber-600 text-white hover:bg-amber-700'),
+                  : cn('bg-[#b43a2f] text-white hover:bg-[#922f27]'),
               )}
               title={isCurrentPageBookmarked ? '当前页已添加书签' : '添加书签到当前页'}
             >
@@ -215,13 +215,13 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                       className={cn(
                         'flex items-center gap-3 px-5 py-3 transition-colors',
                         hoverClass,
-                        isCurrent && (nightMode ? 'bg-amber-900/20' : 'bg-amber-50'),
+                        isCurrent && (nightMode ? 'bg-[#b43a2f]/18' : 'bg-[#b43a2f]/8'),
                       )}
                     >
                       {/* Bookmark icon */}
                       <div className="shrink-0">
                         <svg
-                          className={cn('w-5 h-5', isCurrent ? 'text-amber-500' : textMutedClass)}
+                          className={cn('w-5 h-5', isCurrent ? 'text-[#b43a2f]' : textMutedClass)}
                           fill="currentColor"
                           viewBox="0 0 24 24"
                         >
@@ -237,7 +237,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                         <span
                           className={cn(
                             'block text-sm font-medium truncate',
-                            isCurrent ? 'text-amber-600' : textClass,
+                            isCurrent ? 'text-[#b43a2f]' : textClass,
                           )}
                         >
                           {bookmark.title}

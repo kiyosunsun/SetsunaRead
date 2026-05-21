@@ -150,28 +150,23 @@
 .bookmark-clip {
   position: absolute;
   top: -4px;
-  width: 20px;
-  height: 12px;
-  background: #b8860b;
+  width: 16px;
+  height: 10px;
+  background: linear-gradient(180deg, #b08a3a 0%, #8b6914 100%);
   border-radius: 0 0 4px 4px;
   z-index: 5;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
 .bookmark-ribbon {
   position: absolute;
   top: 8px;
-  width: 18px;
-  height: 64px;
+  width: 14px;
+  height: 72px;
   z-index: 4;
-  background: linear-gradient(
-    180deg,
-    #c0392b 0%,
-    #e74c3c 60%,
-    #c0392b 100%
-  );
+  background: linear-gradient(180deg, #b43a2f 0%, #d34b3a 55%, #9f2f28 100%);
   clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 50% 100%, 0% 85%);
-  box-shadow: 1px 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
 
 /* ---------------------------------------------------------------------------
