@@ -1,3 +1,52 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --radius-sm: 10px;
+  --radius-md: 14px;
+
+  --shadow-book-dark: 0 18px 60px rgba(0, 0, 0, 0.45);
+  --shadow-book-light: 0 14px 40px rgba(0, 0, 0, 0.18);
+
+  --shadow-ui-dark: 0 10px 24px rgba(0, 0, 0, 0.28);
+  --shadow-ui-light: 0 10px 22px rgba(0, 0, 0, 0.14);
+}
+
+[data-theme='dark'] {
+  --desk-bg: #0b0e12;
+  --desk-grain: rgba(255, 255, 255, 0.035);
+  --paper-bg: #e7ddc9;
+  --paper-edge: #d2c2a6;
+  --ink-primary: rgba(20, 18, 14, 0.92);
+  --ink-secondary: rgba(20, 18, 14, 0.62);
+  --ornament: rgba(20, 18, 14, 0.35);
+  --ui-surface: rgba(20, 20, 20, 0.62);
+  --ui-border: rgba(255, 255, 255, 0.12);
+  --ui-text: rgba(255, 255, 255, 0.88);
+  --accent: #8b5cf6;
+
+  --shadow-book: var(--shadow-book-dark);
+  --shadow-ui: var(--shadow-ui-dark);
+}
+
+[data-theme='light'] {
+  --desk-bg: #e6e8ec;
+  --desk-grain: rgba(0, 0, 0, 0.03);
+  --paper-bg: #f7f1e6;
+  --paper-edge: #e6d7be;
+  --ink-primary: rgba(22, 18, 12, 0.9);
+  --ink-secondary: rgba(22, 18, 12, 0.55);
+  --ornament: rgba(22, 18, 12, 0.28);
+  --ui-surface: rgba(255, 255, 255, 0.72);
+  --ui-border: rgba(0, 0, 0, 0.1);
+  --ui-text: rgba(0, 0, 0, 0.72);
+  --accent: #7c3aed;
+
+  --shadow-book: var(--shadow-book-light);
+  --shadow-ui: var(--shadow-ui-light);
+}
+
+body {
+  background: var(--desk-bg);
+}

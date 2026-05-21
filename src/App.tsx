@@ -53,9 +53,7 @@ function App() {
   const currentBook = useBookStore((s) => s.currentBook);
   const { fontSize, lineHeight, nightMode } = useSettingsStore();
 
-  const [importingTitle, setImportingTitle] = useState('');
-
-  /* ---- Page config derived from current settings ---- */
+  /* ---- Shared theme ---- */
   const pageConfig = useMemo(
     () => ({
       width: 480,
@@ -74,7 +72,7 @@ function App() {
       addBook(book);
       openBook(book);
     }
-  }, [book]);
+  }, [book, addBook, openBook]);
 
 
   /* ---- Sync pages from parser result to store ---- */
@@ -89,8 +87,8 @@ function App() {
     }
   }, [book, pages, storeSetPages]);
 
-  /* ---- Shared background class ---- */
-  const bgClass = nightMode ? 'bg-neutral-950' : 'bg-neutral-900';
+  /* ---- Shared theme ---- */
+  const theme = nightMode ? 'dark' : 'light';
 
   /* ================================================================
      BOOKSHELF (no book loaded)
@@ -100,7 +98,8 @@ function App() {
       const found = useBookStore.getState().books.find((b) => b.id === bookId);
       if (found) {
         // Re-parse through useBookParser so pagination is correct for this book
-        await loadFile(found.content, found.title, found.filePath, pageConfig);
+        // 书架只持久化元数据；重新打开时提示用户重新导入（后续可改为读取原始文件）。
+        alert('该书籍需要重新导入后才能打开（当前仅保存书架信息，不保存正文）。');
       }
     };
 
@@ -142,7 +141,7 @@ function App() {
      READING VIEW (book loaded)
      ================================================================ */
   return (
-    <div className={`flex flex-col h-screen w-screen overflow-hidden ${bgClass}`}>
+    <div data-theme={theme} className="flex flex-col h-screen w-screen overflow-hidden">
       {/* ---- Reading area ---- */}
       <div className="flex-1 relative overflow-hidden">
         {/* Back to bookshelf button */}
