@@ -8,9 +8,8 @@ import ChapterList from './components/Reader/ChapterList';
 import BookmarkPanel from './components/Reader/BookmarkPanel';
 import SearchPanel from './components/Reader/SearchPanel';
 import Bookshelf from './components/Reader/Bookshelf';
-import OnboardingGuide from './components/Reader/OnboardingGuide';
+import ImportProgressOverlay from './components/Reader/ImportProgressOverlay';
 import { useBookParser } from './hooks/useBookParser';
-import usePagination from './hooks/usePagination';
 import { useOnboarding } from './hooks/useOnboarding';
 import { useBookStore } from './stores/bookStore';
 import { useSettingsStore } from './stores/settingsStore';
@@ -43,7 +42,7 @@ function App() {
   } = useOnboarding();
 
   /* ---- Core hooks ---- */
-  const { book, chapters, loadFile } = useBookParser();
+  const { book, chapters, pages, loadFile, loading, progress, cancel } = useBookParser();
   const {
     addBook,
     openBook,
@@ -52,6 +51,8 @@ function App() {
   } = useBookStore();
   const currentBook = useBookStore((s) => s.currentBook);
   const { fontSize, lineHeight, nightMode } = useSettingsStore();
+
+  const [importingTitle, setImportingTitle] = useState('');
 
   /* ---- Page config derived from current settings ---- */
   const pageConfig = useMemo(
@@ -80,21 +81,18 @@ function App() {
     }
   }, [book]);
 
-  /* ---- Sync paginated pages to store (keeps reading components fed) ---- */
-  useEffect(() => {
-    if (paginatedPages.length > 0) {
-      storeSetPages(paginatedPages);
 
-      // Clamp currentPage when re-pagination reduces total page count
+  /* ---- Sync pages from parser result to store ---- */
+  useEffect(() => {
+    if (book && pages.length > 0) {
+      storeSetPages(pages);
+
       const state = useBookStore.getState();
-      if (
-        state.currentPage >= paginatedPages.length &&
-        paginatedPages.length > 0
-      ) {
-        useBookStore.setState({ currentPage: paginatedPages.length - 1 });
+      if (state.currentPage >= pages.length && pages.length > 0) {
+        useBookStore.setState({ currentPage: pages.length - 1 });
       }
     }
-  }, [paginatedPages]);
+  }, [book, pages, storeSetPages]);
 
   /* ---- Shared background class ---- */
   const bgClass = nightMode ? 'bg-neutral-950' : 'bg-neutral-900';
@@ -116,12 +114,21 @@ function App() {
         alert('仅支持 .txt 文件格式。');
         return;
       }
+
+      setImportingTitle(file.name.replace(/\.txt$/i, ''));
+
       const buffer = await file.arrayBuffer();
       await loadFile(buffer, file.name, '', pageConfig);
     };
 
     return (
       <>
+        <ImportProgressOverlay
+          open={loading && !!progress}
+          title={importingTitle}
+          progress={progress ?? { stage: 'decoding', percent: 0, message: '准备中…' }}
+          onCancel={cancel}
+        />
         <Bookshelf onOpenBook={handleOpenBook} onImportBook={handleImportBook} />
         <OnboardingGuide
           isOpen={showGuide}

@@ -1,5 +1,43 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import type { Book, Chapter, Page, PageConfig } from '@/types/book';
+import type { ImportProgress } from '@/types/importProgress';
+
+type ProgressStage = ImportProgress['stage'];
+
+type WorkerRequestMsg =
+  | {
+      type: 'parse';
+      requestId: string;
+      fileName: string;
+      filePath: string;
+      buffer: ArrayBuffer;
+      pageConfig: PageConfig;
+    }
+  | { type: 'cancel'; requestId: string };
+
+type WorkerProgressMsg = {
+  type: 'progress';
+  requestId: string;
+  stage: ProgressStage;
+  percent: number;
+  message: string;
+};
+
+type WorkerResultMsg = {
+  type: 'result';
+  requestId: string;
+  book: Book;
+  chapters: Chapter[];
+  pages: Page[];
+};
+
+type WorkerErrorMsg = {
+  type: 'error';
+  requestId: string;
+  message: string;
+};
+
+type WorkerMsg = WorkerProgressMsg | WorkerResultMsg | WorkerErrorMsg;
 
 /**
  * TXT file parser hook for SetsunaRead.
@@ -172,6 +210,8 @@ export interface UseBookParserReturn {
   chapters: Chapter[];
   pages: Page[];
   loading: boolean;
+  progress: ImportProgress | null;
+  cancel: () => void;
   loadFile: (
     input: ArrayBuffer | string,
     fileName: string,
@@ -185,6 +225,29 @@ export function useBookParser(): UseBookParserReturn {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [pages, setPages] = useState<Page[]>([]);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState<ImportProgress | null>(null);
+
+  const workerRef = useRef<Worker | null>(null);
+  const activeRequestIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      workerRef.current?.terminate();
+      workerRef.current = null;
+      activeRequestIdRef.current = null;
+    };
+  }, []);
+
+  const cancel = useCallback(() => {
+    const id = activeRequestIdRef.current;
+    const worker = workerRef.current;
+    if (!id || !worker) return;
+
+    worker.postMessage({ type: 'cancel', requestId: id } satisfies WorkerRequestMsg);
+    activeRequestIdRef.current = null;
+    setLoading(false);
+    setProgress(null);
+  }, []);
 
   const loadFile = useCallback(
     async (
@@ -194,48 +257,90 @@ export function useBookParser(): UseBookParserReturn {
       pageConfig: PageConfig,
     ): Promise<void> => {
       setLoading(true);
+      setProgress({ stage: 'reading', percent: 0, message: '准备开始…' });
+
       try {
-        let content: string;
-
-        if (typeof input === 'string') {
-          content = input;
-        } else {
-          const encoding = detectEncoding(input);
-          const decoder = new TextDecoder(encoding);
-          content = decoder.decode(input);
+        if (!workerRef.current) {
+          workerRef.current = new Worker(new URL('../workers/txtParser.worker.ts', import.meta.url), {
+            type: 'module',
+          });
         }
 
-        // Strip BOM if present
-        if (content.charCodeAt(0) === 0xfeff) {
-          content = content.slice(1);
-        }
+        const worker = workerRef.current;
+        const requestId = crypto.randomUUID();
+        activeRequestIdRef.current = requestId;
 
-        const bookData: Book = {
-          id: crypto.randomUUID(),
-          title: fileName.replace(/\.txt$/i, ''),
-          filePath,
-          content,
-          size: typeof input === 'string'
-            ? new TextEncoder().encode(input).byteLength
-            : input.byteLength,
-          lastRead: Date.now(),
-        };
+        const result = await new Promise<WorkerResultMsg>((resolve, reject) => {
+          const onMessage = (ev: MessageEvent<WorkerMsg>) => {
+            const msg = ev.data;
+            if (msg.requestId !== requestId) return;
 
-        const detectedChapters = parseChapters(content);
-        const paginatedPages = paginateContent(content, pageConfig);
+            if (msg.type === 'progress') {
+              setProgress({ stage: msg.stage, percent: msg.percent, message: msg.message });
+              return;
+            }
 
-        setBook(bookData);
-        setChapters(detectedChapters);
-        setPages(paginatedPages);
+            worker.removeEventListener('message', onMessage);
+            worker.removeEventListener('error', onError);
+
+            if (msg.type === 'result') resolve(msg);
+            else reject(new Error(msg.message));
+          };
+
+          const onError = () => {
+            worker.removeEventListener('message', onMessage);
+            worker.removeEventListener('error', onError);
+            reject(new Error('解析失败'));
+          };
+
+          worker.addEventListener('message', onMessage);
+          worker.addEventListener('error', onError);
+
+          if (typeof input === 'string') {
+            worker.postMessage({
+              type: 'parse',
+              requestId,
+              fileName,
+              filePath,
+              content: input,
+              pageConfig,
+            } satisfies WorkerRequestMsg);
+          } else {
+            worker.postMessage(
+              {
+                type: 'parse',
+                requestId,
+                fileName,
+                filePath,
+                buffer: input,
+                pageConfig,
+              } satisfies WorkerRequestMsg,
+              [input],
+            );
+          }
+        });
+
+        if (activeRequestIdRef.current !== requestId) return;
+
+        setBook(result.book);
+        setChapters(result.chapters);
+        setPages(result.pages);
+        setProgress(null);
       } catch (err) {
         console.error('Failed to load book:', err);
         throw err;
       } finally {
+        if (activeRequestIdRef.current === null) {
+          // canceled
+          return;
+        }
+
+        activeRequestIdRef.current = null;
         setLoading(false);
       }
     },
     [],
   );
 
-  return { book, chapters, pages, loading, loadFile };
+  return { book, chapters, pages, loading, progress, cancel, loadFile };
 }
