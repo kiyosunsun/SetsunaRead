@@ -67,12 +67,6 @@ function App() {
     [fontSize, lineHeight],
   );
 
-  /* ---- DOM-measurement pagination ---- */
-  const { pages: paginatedPages } = usePagination(
-    book?.content ?? '',
-    pageConfig,
-  );
-
   /* ---- Sync book metadata to Zustand store ---- */
   useEffect(() => {
     if (book) {
