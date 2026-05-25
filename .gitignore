@@ -26,6 +26,7 @@ npm-debug.log*
 
 # Tauri
 src-tauri/target/
+src-tauri/gen/
 
 # 本地插件生成文件
 .claude/

@@ -1,6 +1,8 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { useBookStore } from '../../stores/bookStore';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { open } from '@tauri-apps/plugin-dialog';
+import { readFile } from '@tauri-apps/plugin-fs';
 
 /* ---------------------------------------------------------------------------
    书架 Props
@@ -8,8 +10,8 @@ import { useSettingsStore } from '../../stores/settingsStore';
 interface BookshelfProps {
   /** 选中书籍时的回调 */
   onOpenBook: (bookId: string) => void;
-  /** 导入新书时的回调 */
-  onImportBook: (file: File) => void;
+  /** 导入新书时的回调（文件内容, 文件名, 文件路径） */
+  onImportBook: (buffer: ArrayBuffer, fileName: string, filePath: string) => void;
 }
 
 /* ---------------------------------------------------------------------------
@@ -283,19 +285,25 @@ const Bookshelf: React.FC<BookshelfProps> = ({ onOpenBook, onImportBook }) => {
   const books = useBookStore((s) => s.books);
   const removeBook = useBookStore((s) => s.removeBook);
   const { nightMode } = useSettingsStore();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /* ---- 文件导入处理 ---- */
-  const handleFileInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        onImportBook(file);
-      }
-      e.target.value = '';
-    },
-    [onImportBook],
-  );
+  /* ---- 文件导入处理（使用 Tauri 对话框获取真实路径） ---- */
+  const handleImportClick = useCallback(async () => {
+    const selected = await open({
+      multiple: false,
+      filters: [
+        { name: '文本文件', extensions: ['txt'] },
+      ],
+    });
+
+    if (selected) {
+      const filePath = selected as string;
+      // 从路径中提取文件名
+      const fileName = filePath.split(/[/\\]/).pop() || 'unknown.txt';
+      // 读取文件内容
+      const content = await readFile(filePath);
+      onImportBook(content.buffer, fileName, filePath);
+    }
+  }, [onImportBook]);
 
   /* ---- 删除处理（带确认） ---- */
   const handleDelete = useCallback(
@@ -365,16 +373,6 @@ const Bookshelf: React.FC<BookshelfProps> = ({ onOpenBook, onImportBook }) => {
         className="min-h-screen flex flex-col items-center justify-center select-none"
         style={{ ...woodBgStyle, ...nightWoodBg, position: 'relative' }}
       >
-        {/* 隐藏的文件输入 */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".txt"
-          onChange={handleFileInputChange}
-          className="hidden"
-          aria-label="导入书籍文件"
-        />
-
         {/* 顶部铜金色装饰线 */}
         <div
           style={{
@@ -421,7 +419,7 @@ const Bookshelf: React.FC<BookshelfProps> = ({ onOpenBook, onImportBook }) => {
 
           {/* 导入按钮：深色木质渐变 + 铜金色边框 */}
           <button
-            onClick={() => fileInputRef.current?.click()}
+            onClick={handleImportClick}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -480,16 +478,6 @@ const Bookshelf: React.FC<BookshelfProps> = ({ onOpenBook, onImportBook }) => {
       className="min-h-screen select-none"
       style={{ ...woodBgStyle, ...nightWoodBg, position: 'relative' }}
     >
-      {/* 隐藏的文件输入 */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".txt"
-        onChange={handleFileInputChange}
-        className="hidden"
-        aria-label="导入书籍文件"
-      />
-
       {/* 顶部铜金色装饰线 */}
       <div
         style={{
@@ -541,7 +529,7 @@ const Bookshelf: React.FC<BookshelfProps> = ({ onOpenBook, onImportBook }) => {
 
         {/* 导入按钮 */}
         <button
-          onClick={() => fileInputRef.current?.click()}
+          onClick={handleImportClick}
           style={{
             display: 'inline-flex',
             alignItems: 'center',

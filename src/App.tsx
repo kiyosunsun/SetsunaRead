@@ -15,6 +15,7 @@ import { useOnboarding } from './hooks/useOnboarding';
 import { usePageSize } from './hooks/usePageSize';
 import { useBookStore } from './stores/bookStore';
 import { useSettingsStore } from './stores/settingsStore';
+import { loadBookFile } from './lib/fileStorage';
 
 /* ---------------------------------------------------------------------------
    App - Main application shell for SetsunaRead.
@@ -102,22 +103,25 @@ function App() {
     const handleOpenBook = async (bookId: string) => {
       const found = useBookStore.getState().books.find((b) => b.id === bookId);
       if (found) {
-        // Re-parse through useBookParser so pagination is correct for this book
-        // 书架只持久化元数据；重新打开时提示用户重新导入（后续可改为读取原始文件）。
-        alert('该书籍需要重新导入后才能打开（当前仅保存书架信息，不保存正文）。');
+        // 从原始文件路径读取
+        setImportingTitle(found.title);
+        const buffer = await loadBookFile(found.filePath);
+        if (buffer) {
+          await loadFile(buffer, `${found.title}.txt`, found.filePath, pageConfig);
+        } else {
+          alert('无法读取书籍文件，请确认文件是否存在，或重新导入。');
+        }
       }
     };
 
-    const handleImportBook = async (file: File) => {
-      if (!file.name.endsWith('.txt')) {
+    const handleImportBook = async (buffer: ArrayBuffer, fileName: string, filePath: string) => {
+      if (!fileName.endsWith('.txt')) {
         alert('仅支持 .txt 文件格式。');
         return;
       }
 
-      setImportingTitle(file.name.replace(/\.txt$/i, ''));
-
-      const buffer = await file.arrayBuffer();
-      await loadFile(buffer, file.name, '', pageConfig);
+      setImportingTitle(fileName.replace(/\.txt$/i, ''));
+      await loadFile(buffer, fileName, filePath, pageConfig);
     };
 
     return (
