@@ -10,6 +10,8 @@ interface BookState {
   currentPage: number;
   totalPages: number;
   pages: Page[];
+  /** 每本书的阅读进度 { bookId: pageNumber } */
+  readingProgress: Record<string, number>;
 
   addBook: (book: Book) => void;
   removeBook: (bookId: string) => void;
@@ -29,6 +31,7 @@ export const useBookStore = create<BookState>()(
       currentPage: 0,
       totalPages: 0,
       pages: [],
+      readingProgress: {},
 
       addBook: (book: Book) => {
         set((state) => {
@@ -43,6 +46,8 @@ export const useBookStore = create<BookState>()(
       removeBook: (bookId: string) => {
         set((state) => {
           const filtered = state.books.filter((b) => b.id !== bookId);
+          // 同时删除该书的阅读进度
+          const { [bookId]: _, ...restProgress } = state.readingProgress;
           if (state.currentBook?.id === bookId) {
             return {
               books: filtered,
@@ -50,26 +55,45 @@ export const useBookStore = create<BookState>()(
               currentPage: 0,
               totalPages: 0,
               pages: [],
+              readingProgress: restProgress,
             };
           }
-          return { books: filtered };
+          return { books: filtered, readingProgress: restProgress };
         });
       },
 
       openBook: (book: Book) => {
+        const { readingProgress } = get();
+        // 恢复该书的阅读进度，没有则从第 0 页开始
+        const savedPage = readingProgress[book.id] ?? 0;
         set({
           currentBook: book,
-          currentPage: 0,
+          currentPage: savedPage,
         });
       },
 
       closeBook: () => {
-        set({
-          currentBook: null,
-          currentPage: 0,
-          totalPages: 0,
-          pages: [],
-        });
+        const { currentBook, currentPage, readingProgress } = get();
+        // 关闭时保存当前阅读进度
+        if (currentBook) {
+          set({
+            currentBook: null,
+            currentPage: 0,
+            totalPages: 0,
+            pages: [],
+            readingProgress: {
+              ...readingProgress,
+              [currentBook.id]: currentPage,
+            },
+          });
+        } else {
+          set({
+            currentBook: null,
+            currentPage: 0,
+            totalPages: 0,
+            pages: [],
+          });
+        }
       },
 
       setPages: (pages: Page[]) => {
@@ -77,32 +101,47 @@ export const useBookStore = create<BookState>()(
       },
 
       goToPage: (page: number) => {
-        const { totalPages } = get();
+        const { totalPages, currentBook, readingProgress } = get();
         if (page >= 0 && page < totalPages) {
-          set({ currentPage: page });
+          set({
+            currentPage: page,
+            // 同步更新阅读进度
+            ...(currentBook ? { readingProgress: { ...readingProgress, [currentBook.id]: page } } : {}),
+          });
         }
       },
 
       nextPage: (step = 1) => {
-        const { currentPage, totalPages } = get();
+        const { currentPage, totalPages, currentBook, readingProgress } = get();
         const next = currentPage + step;
         if (next < totalPages) {
-          set({ currentPage: next });
+          set({
+            currentPage: next,
+            ...(currentBook ? { readingProgress: { ...readingProgress, [currentBook.id]: next } } : {}),
+          });
         }
       },
 
       prevPage: (step = 1) => {
-        const { currentPage } = get();
+        const { currentPage, currentBook, readingProgress } = get();
         const prev = currentPage - step;
         if (prev >= 0) {
-          set({ currentPage: prev });
+          set({
+            currentPage: prev,
+            ...(currentBook ? { readingProgress: { ...readingProgress, [currentBook.id]: prev } } : {}),
+          });
         }
       },
     }),
     {
       name: 'setsuna-book-store',
-      storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) => ({ books: state.books }),
+      // 使用 localStorage 持久化书架和阅读进度
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        books: state.books,
+        // 保存每本书的阅读进度（用 bookId 映射 currentPage）
+        readingProgress: state.readingProgress,
+      }),
     },
   ),
 );
