@@ -20,6 +20,8 @@ interface ToolbarProps {
   onOpenChapterList: () => void;
   /** 打开搜索面板回调 */
   onOpenSearch: () => void;
+  /** 打开书签面板回调 */
+  onOpenBookmarkPanel: () => void;
   /** 打开设置面板回调 */
   onOpenSettings: () => void;
 }
@@ -43,10 +45,10 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onReadingModeChange,
   onOpenChapterList,
   onOpenSearch,
+  onOpenBookmarkPanel,
   onOpenSettings,
 }) => {
   const { currentPage, totalPages, nextPage, prevPage } = useBookStore();
-  const { addBookmark, removeBookmark } = useBookmarkStore();
   const { nightMode } = useSettingsStore();
 
   /* 双页模式一次跳 2 页，单页/滚动跳 1 页 */
@@ -63,26 +65,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
 
   /* 计算进度百分比（currentPage 从 0 开始，显示时 +1） */
   const progress = totalPages > 0 ? Math.round(((currentPage + 1) / totalPages) * 100) : 0;
-
-  /* 处理书签切换 */
-  const handleBookmarkToggle = () => {
-    if (!bookId) return;
-
-    if (isBookmarked) {
-      const existingBookmark = bookmarks.find(
-        (b) => b.bookId === bookId && b.pageNumber === currentPage,
-      );
-      if (existingBookmark) {
-        removeBookmark(existingBookmark.id);
-      }
-    } else {
-      addBookmark({
-        bookId,
-        pageNumber: currentPage,
-        title: `第 ${currentPage + 1} 页`,
-      });
-    }
-  };
 
   return (
     <div
@@ -177,9 +159,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
         </svg>
       </button>
 
-      {/* ---- 书签按钮 ---- */}
+      {/* ---- 书签按钮（打开书签面板） ---- */}
       <button
-        onClick={handleBookmarkToggle}
+        onClick={onOpenBookmarkPanel}
         disabled={!bookId}
         className="p-2 rounded-lg transition-all duration-200"
         style={{
@@ -198,8 +180,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
           e.currentTarget.style.background = isBookmarked ? 'rgba(184,134,11,0.1)' : 'transparent';
           e.currentTarget.style.color = isBookmarked ? '#b8860b' : 'rgba(212,197,169,0.5)';
         }}
-        title={isBookmarked ? '移除书签' : '添加书签'}
-        aria-label={isBookmarked ? '移除书签' : '添加书签'}
+        title="书签"
+        aria-label="书签"
       >
         <svg
           className="w-5 h-5"
@@ -263,7 +245,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <div className="relative">
         <button
           onClick={() => setShowModeSelector(!showModeSelector)}
-          className="px-3 py-1.5 rounded-lg text-sm transition-all duration-200"
+          className="px-3 py-1.5 rounded-lg text-sm transition-all duration-200 whitespace-nowrap"
           style={{
             fontFamily: '"Noto Sans SC", sans-serif',
             background: 'rgba(255,255,255,0.04)',
@@ -303,7 +285,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
                   onReadingModeChange(mode.value);
                   setShowModeSelector(false);
                 }}
-                className="w-full px-4 py-2 text-left text-sm transition-all duration-200"
+                className="w-full px-4 py-2 text-left text-sm transition-all duration-200 whitespace-nowrap"
                 style={{
                   fontFamily: '"Noto Sans SC", sans-serif',
                   color: readingMode === mode.value ? '#c4982f' : 'rgba(212,197,169,0.6)',

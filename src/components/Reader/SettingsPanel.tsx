@@ -2,6 +2,7 @@ import React from 'react';
 import {
   useSettingsStore,
   PAPER_COLORS,
+  FONT_OPTIONS,
   type PaperBackground,
   type FlipAnimation,
 } from '../../stores/settingsStore';
@@ -46,6 +47,7 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
   const {
     paperBackground,
     fontSize,
+    fontFamily,
     lineHeight,
     nightMode,
     flipAnimation,
@@ -194,7 +196,16 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
               }}
             >
               <label>字体大小</label>
-              <span style={{ fontFamily: 'monospace', color: 'rgba(212,197,169,0.4)', fontSize: '12px' }}>
+              <span
+                className="px-2 py-0.5 rounded-md"
+                style={{
+                  fontFamily: 'monospace',
+                  color: '#d4c5a9',
+                  fontSize: '13px',
+                  background: 'rgba(184,134,11,0.15)',
+                  border: '1px solid rgba(184,134,11,0.2)',
+                }}
+              >
                 {fontSize}px
               </span>
             </div>
@@ -226,6 +237,54 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
             </div>
           </section>
 
+          {/* ---- 字体选择 ---- */}
+          <section>
+            <label
+              className="block text-sm font-medium mb-3"
+              style={{
+                fontFamily: '"Noto Sans SC", sans-serif',
+                color: 'rgba(212,197,169,0.5)',
+                letterSpacing: '2px',
+                fontSize: '12px',
+                textTransform: 'uppercase',
+              }}
+            >
+              字体
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {FONT_OPTIONS.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => updateSetting('fontFamily', option.value)}
+                  className="px-3 py-2 rounded-xl text-sm transition-all duration-200"
+                  style={{
+                    fontFamily: option.value,
+                    background: fontFamily === option.value
+                      ? 'rgba(184,134,11,0.15)'
+                      : 'rgba(255,255,255,0.03)',
+                    border: `1.5px solid ${fontFamily === option.value ? 'rgba(184,134,11,0.4)' : 'transparent'}`,
+                    color: fontFamily === option.value ? '#c4982f' : 'rgba(212,197,169,0.6)',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (fontFamily !== option.value) {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (fontFamily !== option.value) {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                    }
+                  }}
+                  title={option.label}
+                  aria-label={`字体: ${option.label}`}
+                  aria-pressed={fontFamily === option.value}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </section>
+
           {/* ---- 行间距 ---- */}
           <section>
             <div
@@ -237,7 +296,16 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ isOpen, onClose }) => {
               }}
             >
               <label>行间距</label>
-              <span style={{ fontFamily: 'monospace', color: 'rgba(212,197,169,0.4)', fontSize: '12px' }}>
+              <span
+                className="px-2 py-0.5 rounded-md"
+                style={{
+                  fontFamily: 'monospace',
+                  color: '#d4c5a9',
+                  fontSize: '13px',
+                  background: 'rgba(184,134,11,0.15)',
+                  border: '1px solid rgba(184,134,11,0.2)',
+                }}
+              >
                 {lineHeight.toFixed(1)}
               </span>
             </div>

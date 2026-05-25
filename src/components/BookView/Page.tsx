@@ -1,6 +1,7 @@
 import React, { useMemo, useRef } from 'react';
 import { useSettingsStore, PAPER_COLORS } from '../../stores/settingsStore';
 import { useBookStore } from '../../stores/bookStore';
+import { useBookmarkStore } from '../../stores/bookmarkStore';
 import '../../styles/book.css';
 
 const CornerOrnament = (props: { className: string }) => (
@@ -35,6 +36,14 @@ const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft, className }) =
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  /* 检查当前页是否已添加书签 */
+  const bookmarks = useBookmarkStore((state) => state.bookmarks);
+  const bookId = useBookStore((state) => state.currentBook?.id);
+  const isBookmarked = useMemo(
+    () => bookmarks.some((b) => b.bookId === bookId && b.pageNumber === pageNumber),
+    [bookmarks, bookId, pageNumber],
+  );
+
   const paperColor = PAPER_COLORS[paperBackground];
 
   const pageHeaderText = useMemo(() => {
@@ -56,12 +65,7 @@ const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft, className }) =
   const pageStyle: React.CSSProperties = {
     backgroundColor: nightMode ? '#1a1612' : paperColor,
     fontSize: `${fontSize}px`,
-    fontFamily:
-      fontFamily === 'serif'
-        ? '"Noto Serif SC", "Noto Serif", "Source Serif Pro", "Georgia", serif'
-        : fontFamily === 'sans-serif'
-          ? '"Noto Sans SC", "Inter", "Noto Sans", "Helvetica Neue", sans-serif'
-          : '"JetBrains Mono", "Fira Code", monospace',
+    fontFamily: fontFamily,
     lineHeight,
     color: nightMode ? '#c4b89a' : '#2c2218',
   };
@@ -82,6 +86,36 @@ const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft, className }) =
       <CornerOrnament className="reader-ornament tr" />
       <CornerOrnament className="reader-ornament bl" />
       <CornerOrnament className="reader-ornament br" />
+
+      {/* ---- 书签丝带 ---- */}
+      {isBookmarked && (
+        <div
+          className="absolute z-[10] pointer-events-none"
+          style={{
+            top: 0,
+            right: '24px',
+            width: '18px',
+            height: '64px',
+            background: 'linear-gradient(180deg, #b43a2f 0%, #8b2e25 100%)',
+            borderRadius: '0 0 3px 3px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+          }}
+        >
+          {/* 丝带尾部 V 形剪口 */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-6px',
+              left: 0,
+              width: 0,
+              height: 0,
+              borderLeft: '9px solid #8b2e25',
+              borderRight: '9px solid #8b2e25',
+              borderBottom: '6px solid transparent',
+            }}
+          />
+        </div>
+      )}
 
       <div className="relative z-[3] page-pad page-grid">
         <div className="page-header">

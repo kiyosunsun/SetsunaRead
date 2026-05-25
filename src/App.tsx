@@ -188,6 +188,7 @@ function App() {
         onReadingModeChange={setReadingMode}
         onOpenChapterList={() => setChapterListOpen(true)}
         onOpenSearch={() => setSearchOpen(true)}
+        onOpenBookmarkPanel={() => setBookmarkPanelOpen(true)}
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
