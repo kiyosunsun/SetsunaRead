@@ -199,7 +199,7 @@ function App() {
       {/* ---- Overlay panels ---- */}
       <SettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <ChapterList isOpen={chapterListOpen} onClose={() => setChapterListOpen(false)} chapters={chapters} />
-      <BookmarkPanel isOpen={bookmarkPanelOpen} onClose={() => setBookmarkPanelOpen(false)} />
+      <BookmarkPanel isOpen={bookmarkPanelOpen} onClose={() => setBookmarkPanelOpen(false)} readingMode={readingMode} />
       <SearchPanel isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {/* ---- Onboarding Guide ---- */}

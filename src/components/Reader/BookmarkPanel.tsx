@@ -12,6 +12,8 @@ interface BookmarkPanelProps {
   isOpen: boolean;
   /** Callback to close the panel */
   onClose: () => void;
+  /** 当前阅读模式 */
+  readingMode?: 'dual' | 'single' | 'scroll';
 }
 
 /* ---------------------------------------------------------------------------
@@ -32,7 +34,7 @@ function formatDate(timestamp: number): string {
    Slide-in side panel showing bookmarks for the current book.
    Allows adding/removing bookmarks and clicking to jump to a bookmarked page.
    --------------------------------------------------------------------------- */
-const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
+const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose, readingMode = 'dual' }) => {
   const { currentPage, totalPages, goToPage } = useBookStore();
   const { nightMode } = useSettingsStore();
   const bookmarks = useBookmarkStore((state) => state.bookmarks);
@@ -48,21 +50,30 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
       .sort((a, b) => a.pageNumber - b.pageNumber);
   }, [bookmarks, bookId]);
 
+  /* ---- 书签始终绑定当前页（双页模式下为左页） ---- */
+  const bookmarkTargetPage = currentPage;
+
   /* ---- Check if current page is bookmarked ---- */
   const isCurrentPageBookmarked = useMemo(() => {
     if (!bookId) return false;
+    if (readingMode === 'dual') {
+      // 双页模式：左右任一页有书签都算当前 spread 已 bookmarked
+      return bookmarks.some(
+        (b) => b.bookId === bookId && (b.pageNumber === currentPage || b.pageNumber === currentPage + 1),
+      );
+    }
     return bookmarks.some(
       (b) => b.bookId === bookId && b.pageNumber === currentPage,
     );
-  }, [bookmarks, bookId, currentPage]);
+  }, [bookmarks, bookId, currentPage, readingMode]);
 
   /* ---- Add bookmark for current page ---- */
   const handleAddBookmark = () => {
     if (!bookId) return;
     addBookmark({
       bookId,
-      pageNumber: currentPage,
-      title: `第 ${currentPage + 1} 页`,
+      pageNumber: bookmarkTargetPage,
+      title: `第 ${bookmarkTargetPage + 1} 页`,
     });
   };
 
@@ -158,8 +169,8 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
               </svg>
               {isCurrentPageBookmarked
-                ? `已添加书签 (第 ${currentPage + 1} 页)`
-                : `添加书签 (第 ${currentPage + 1} 页)`}
+                ? `已添加书签 (第 ${bookmarkTargetPage + 1} 页)`
+                : `添加书签 (第 ${bookmarkTargetPage + 1} 页)`}
             </button>
           </div>
         )}

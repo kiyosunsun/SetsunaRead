@@ -1,6 +1,7 @@
-import React, { useEffect, useCallback, useRef, useState } from 'react';
+import React, { useEffect, useCallback, useRef, useState, useMemo } from 'react';
 import { useBookStore } from '../../stores/bookStore';
 import { useSettingsStore } from '../../stores/settingsStore';
+import { useBookmarkStore } from '../../stores/bookmarkStore';
 import { usePageSize } from '../../hooks/usePageSize';
 import Page from './Page';
 import '../../styles/book.css';
@@ -28,6 +29,14 @@ const DualPage: React.FC = () => {
   const leftPage = pages[leftPageIndex] ?? null;
   const rightPage = pages[rightPageIndex] ?? null;
   const shouldAnimateFlip = flipAnimation !== 'fade' && flipAnimation !== 'slide';
+
+  /* ---- 书签指示器：右页有书签时显示 ---- */
+  const bookmarks = useBookmarkStore((state) => state.bookmarks);
+  const bookId = useBookStore((state) => state.currentBook?.id);
+  const isRightPageBookmarked = useMemo(() => {
+    if (!bookId || !rightPage) return false;
+    return bookmarks.some((b) => b.bookId === bookId && b.pageNumber === rightPage.pageNumber);
+  }, [bookmarks, bookId, rightPage]);
 
   const clearAnimation = useCallback(() => {
     setLeftAnimClass('');
@@ -227,6 +236,189 @@ const DualPage: React.FC = () => {
           <div className={`page-flip-shadow right ${rightAnimClass ? 'is-visible' : ''}`} />
           <div className={`page-flip-highlight right ${rightAnimClass ? 'is-visible' : ''}`} />
         </div>
+
+        {/* ---- 拟物书签（卡在右页顶部中间） ---- */}
+        {isRightPageBookmarked && (
+          <div
+            data-no-page-turn="true"
+            style={{
+              position: 'absolute',
+              top: '-12px',
+              /* 右页居中 = 左页 + 书脊 + 右页一半 */
+              left: `calc(${pageSize.width}px + 20px + ${pageSize.width / 2}px)`,
+              transform: 'translateX(-50%)',
+              width: '88px',
+              zIndex: 30,
+              pointerEvents: 'none',
+            }}
+          >
+            {/* 金属书签夹 */}
+            <div
+              style={{
+                width: '88px',
+                height: '22px',
+                background: 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)',
+                borderRadius: '6px 6px 0 0',
+                position: 'relative',
+                margin: '0 auto',
+                boxShadow: '0 -3px 10px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.1), inset 0 -1px 2px rgba(0,0,0,0.3)',
+              }}
+            >
+              {/* 夹子高光线 */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '3px',
+                  left: '12%',
+                  right: '12%',
+                  height: '2px',
+                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)',
+                  borderRadius: '1px',
+                }}
+              />
+            </div>
+
+            {/* 书签主体 */}
+            <div
+              style={{
+                width: '82px',
+                margin: '0 auto',
+                background: 'linear-gradient(180deg, #1a1a1a 0%, #111 15%, #0d0d0d 100%)',
+                borderRadius: '0 0 4px 4px',
+                position: 'relative',
+                overflow: 'hidden',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 0 30px rgba(255,255,255,0.015)',
+              }}
+            >
+              {/* 光泽效果 */}
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: '10%',
+                  right: '55%',
+                  height: '100%',
+                  background: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 20%, transparent 40%)',
+                  pointerEvents: 'none',
+                  zIndex: 2,
+                }}
+              />
+
+              {/* 竖排金字文字 */}
+              <div
+                style={{
+                  writingMode: 'vertical-rl',
+                  color: '#d4a853',
+                  fontSize: '11px',
+                  letterSpacing: '4px',
+                  padding: '18px 10px 14px',
+                  textAlign: 'center',
+                  lineHeight: 1.6,
+                  fontFamily: "'Playfair Display', 'Noto Serif SC', serif",
+                  textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                }}
+              >
+                书签
+              </div>
+
+              {/* 紫蝴蝶 + 发光 */}
+              <div style={{ textAlign: 'center', padding: '10px 0', fontSize: '44px', position: 'relative' }}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '60px',
+                    height: '60px',
+                    background: 'radial-gradient(circle, rgba(147,112,219,0.25) 0%, transparent 70%)',
+                    borderRadius: '50%',
+                    filter: 'blur(6px)',
+                  }}
+                />
+                <span style={{ position: 'relative', zIndex: 1, filter: 'drop-shadow(0 0 8px rgba(147,112,219,0.6))' }}>
+                  🦋
+                </span>
+              </div>
+
+              {/* 品牌区域 */}
+              <div
+                style={{
+                  padding: '12px 8px 16px',
+                  textAlign: 'center',
+                  borderTop: '1px solid rgba(212,168,83,0.15)',
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: '14px',
+                    color: '#d4a853',
+                    fontWeight: 600,
+                    fontFamily: "'Playfair Display', serif",
+                    letterSpacing: '2px',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                  }}
+                >
+                  Setsuna
+                </div>
+                <div
+                  style={{
+                    fontSize: '8px',
+                    color: 'rgba(212,168,83,0.5)',
+                    fontFamily: "'Microsoft YaHei', sans-serif",
+                    marginTop: '3px',
+                    letterSpacing: '1px',
+                  }}
+                >
+                  本地阅读
+                </div>
+                {/* 红色印章 */}
+                <div
+                  style={{
+                    display: 'inline-block',
+                    width: '26px',
+                    height: '26px',
+                    background: 'linear-gradient(135deg, #c0392b, #a93226)',
+                    borderRadius: '3px',
+                    marginTop: '8px',
+                    position: 'relative',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      color: 'white',
+                      fontSize: '13px',
+                      fontWeight: 'bold',
+                      fontFamily: "'SimSun', serif",
+                    }}
+                  >
+                    阅
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 书签投射到页面上的阴影 */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '10px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '100px',
+                height: '60px',
+                background: 'radial-gradient(ellipse at center top, rgba(0,0,0,0.15) 0%, transparent 70%)',
+                filter: 'blur(4px)',
+                zIndex: -1,
+              }}
+            />
+          </div>
+        )}
 
         {/* ---- 书边厚度（右侧堆叠书页） ---- */}
         <div

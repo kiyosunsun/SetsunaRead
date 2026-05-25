@@ -42,6 +42,7 @@ const ScrollView: React.FC = () => {
                 content={page.content}
                 pageNumber={page.pageNumber}
                 isLeft={false}
+                readingMode="scroll"
               />
             </div>
 

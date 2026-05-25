@@ -69,6 +69,7 @@ const SinglePage: React.FC = () => {
             content={pageData.content}
             pageNumber={pageData.pageNumber}
             isLeft={false}
+            readingMode="single"
           />
         ) : (
           <div className="w-full h-full bg-transparent" />

@@ -23,6 +23,8 @@ interface PageProps {
   /** 是否为双页展开中的左页 */
   isLeft: boolean;
   className?: string;
+  /** 阅读模式（用于控制书签指示器位置） */
+  readingMode?: 'dual' | 'single' | 'scroll';
 }
 
 /* ---------------------------------------------------------------------------
@@ -30,7 +32,7 @@ interface PageProps {
    使用 CSS Multi-column 自动分页。
    浏览器自动将内容分成多列，通过 transform 控制显示哪一列。
    --------------------------------------------------------------------------- */
-const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft, className }) => {
+const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft, className, readingMode = 'single' }) => {
   const { paperBackground, fontSize, fontFamily, lineHeight, nightMode } = useSettingsStore();
   const { pages, currentPage } = useBookStore();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -87,33 +89,165 @@ const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft, className }) =
       <CornerOrnament className="reader-ornament bl" />
       <CornerOrnament className="reader-ornament br" />
 
-      {/* ---- 书签丝带 ---- */}
-      {isBookmarked && (
+      {/* ---- 拟物书签（单页/滚动模式：右上角） ---- */}
+      {isBookmarked && readingMode !== 'dual' && (
         <div
-          className="absolute z-[10] pointer-events-none"
           style={{
-            top: 0,
-            right: '24px',
-            width: '18px',
-            height: '64px',
-            background: 'linear-gradient(180deg, #b43a2f 0%, #8b2e25 100%)',
-            borderRadius: '0 0 3px 3px',
-            boxShadow: '0 2px 6px rgba(0,0,0,0.25)',
+            position: 'absolute',
+            top: '-12px',
+            right: '20px',
+            width: '88px',
+            zIndex: 10,
+            pointerEvents: 'none',
           }}
         >
-          {/* 丝带尾部 V 形剪口 */}
+          {/* 金属书签夹 */}
           <div
             style={{
-              position: 'absolute',
-              bottom: '-6px',
-              left: 0,
-              width: 0,
-              height: 0,
-              borderLeft: '9px solid #8b2e25',
-              borderRight: '9px solid #8b2e25',
-              borderBottom: '6px solid transparent',
+              width: '88px',
+              height: '22px',
+              background: 'linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%)',
+              borderRadius: '6px 6px 0 0',
+              position: 'relative',
+              boxShadow: '0 -3px 10px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.1), inset 0 -1px 2px rgba(0,0,0,0.3)',
             }}
-          />
+          >
+            <div
+              style={{
+                position: 'absolute',
+                top: '3px',
+                left: '12%',
+                right: '12%',
+                height: '2px',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)',
+                borderRadius: '1px',
+              }}
+            />
+          </div>
+
+          {/* 书签主体 */}
+          <div
+            style={{
+              width: '82px',
+              margin: '0 auto',
+              background: 'linear-gradient(180deg, #1a1a1a 0%, #111 15%, #0d0d0d 100%)',
+              borderRadius: '0 0 4px 4px',
+              position: 'relative',
+              overflow: 'hidden',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+            }}
+          >
+            {/* 光泽 */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: '10%',
+                right: '55%',
+                height: '100%',
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 20%, transparent 40%)',
+                pointerEvents: 'none',
+                zIndex: 2,
+              }}
+            />
+
+            {/* 竖排金字 */}
+            <div
+              style={{
+                writingMode: 'vertical-rl',
+                color: '#d4a853',
+                fontSize: '11px',
+                letterSpacing: '4px',
+                padding: '18px 10px 14px',
+                textAlign: 'center',
+                lineHeight: 1.6,
+                fontFamily: "'Playfair Display', 'Noto Serif SC', serif",
+                textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+              }}
+            >
+              书签
+            </div>
+
+            {/* 紫蝴蝶 + 发光 */}
+            <div style={{ textAlign: 'center', padding: '10px 0', fontSize: '44px', position: 'relative' }}>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  width: '60px',
+                  height: '60px',
+                  background: 'radial-gradient(circle, rgba(147,112,219,0.25) 0%, transparent 70%)',
+                  borderRadius: '50%',
+                  filter: 'blur(6px)',
+                }}
+              />
+              <span style={{ position: 'relative', zIndex: 1, filter: 'drop-shadow(0 0 8px rgba(147,112,219,0.6))' }}>
+                🦋
+              </span>
+            </div>
+
+            {/* 品牌 */}
+            <div
+              style={{
+                padding: '12px 8px 16px',
+                textAlign: 'center',
+                borderTop: '1px solid rgba(212,168,83,0.15)',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '14px',
+                  color: '#d4a853',
+                  fontWeight: 600,
+                  fontFamily: "'Playfair Display', serif",
+                  letterSpacing: '2px',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                }}
+              >
+                Setsuna
+              </div>
+              <div
+                style={{
+                  fontSize: '8px',
+                  color: 'rgba(212,168,83,0.5)',
+                  fontFamily: "'Microsoft YaHei', sans-serif",
+                  marginTop: '3px',
+                  letterSpacing: '1px',
+                }}
+              >
+                本地阅读
+              </div>
+              <div
+                style={{
+                  display: 'inline-block',
+                  width: '26px',
+                  height: '26px',
+                  background: 'linear-gradient(135deg, #c0392b, #a93226)',
+                  borderRadius: '3px',
+                  marginTop: '8px',
+                  position: 'relative',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                }}
+              >
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    color: 'white',
+                    fontSize: '13px',
+                    fontWeight: 'bold',
+                    fontFamily: "'SimSun', serif",
+                  }}
+                >
+                  阅
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

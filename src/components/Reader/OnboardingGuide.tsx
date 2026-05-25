@@ -90,7 +90,7 @@ function StartIcon() {
 function getSteps(): OnboardingStep[] {
   return [
     {
-      title: '欢迎使用 SetsunaRead',
+      title: '欢迎使用 Setsuna',
       description: '一个精美的无干扰阅读体验，让你沉浸在书籍的世界中。让我们来介绍一下。',
       icon: <WelcomeIcon />,
       gradient: 'from-amber-600/20 via-orange-500/15 to-rose-500/10',
