@@ -17,6 +17,7 @@ export interface Page {
   content: string;
   pageNumber: number;
   chapterIndex?: number;
+  chapterTitle?: string;
 }
 
 export interface PageConfig {

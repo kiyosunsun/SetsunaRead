@@ -47,29 +47,6 @@ type WorkerMessage = ProgressMessage | ResultMessage | ErrorMessage;
 
 const workerScope = self as DedicatedWorkerGlobalScope;
 const CANCELED_ERROR = '__TXT_PARSE_CANCELED__';
-
-function createUUID(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-    return crypto.randomUUID();
-  }
-
-  if (typeof crypto !== 'undefined' && 'getRandomValues' in crypto) {
-    const bytes = new Uint8Array(16);
-    crypto.getRandomValues(bytes);
-
-    bytes[6] = (bytes[6] & 0x0f) | 0x40;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-
-    const hex = Array.from(bytes)
-      .map((b) => b.toString(16).padStart(2, '0'))
-      .join('');
-
-    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-  }
-
-  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
 const canceledRequests = new Map<string, number>();
 const CANCEL_TTL_MS = 60_000;
 
@@ -203,46 +180,175 @@ function parseChapters(content: string): Chapter[] {
   return chapters;
 }
 
+function getChapterIndexForRange(chapters: Chapter[], startIndex: number): number | undefined {
+  for (let i = chapters.length - 1; i >= 0; i--) {
+    const chapter = chapters[i];
+    if (startIndex >= chapter.startIndex && startIndex < chapter.endIndex) {
+      return i;
+    }
+  }
+
+  return chapters.length > 0 ? 0 : undefined;
+}
+
+/**
+ * 判断字符是否为中文字符（全角字符）。
+ * 中文字符宽度约为 fontSize，英文字符约为 fontSize * 0.55。
+ */
+function isChineseChar(char: string): boolean {
+  const code = char.charCodeAt(0);
+  return (
+    (code >= 0x4e00 && code <= 0x9fff) ||   // CJK 统一汉字
+    (code >= 0x3400 && code <= 0x4dbf) ||   // CJK 扩展 A
+    (code >= 0x20000 && code <= 0x2a6df) || // CJK 扩展 B
+    (code >= 0x2a700 && code <= 0x2b73f) || // CJK 扩展 C
+    (code >= 0x2b740 && code <= 0x2b81f) || // CJK 扩展 D
+    (code >= 0xf900 && code <= 0xfaff) ||   // CJK 兼容汉字
+    (code >= 0x2f800 && code <= 0x2fa1f)    // CJK 兼容补充
+  );
+}
+
+/**
+ * 计算字符串的"视觉宽度"（以 fontSize 为单位）。
+ * 中文字符算 1 单位，英文/数字/标点算 0.55 单位。
+ */
+function measureTextWidth(text: string, fontSize: number): number {
+  let width = 0;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (isChineseChar(char)) {
+      width += fontSize;
+    } else if (char === '\n' || char === '\t') {
+      // 换行和制表符不计入宽度
+    } else {
+      // 英文、数字、标点等半角字符
+      width += fontSize * 0.55;
+    }
+  }
+  return width;
+}
+
+/**
+ * 查找自然断点（段落、句子边界）。
+ * 向前搜索最多 lookback 个字符。
+ */
+/**
+ * 查找自然断点（段落、句子边界）。
+ * 向前搜索下一个段落起始位置（全角空格或换行符开头），
+ * 同时回退到最近的句子结尾标点。
+ */
+function findNaturalBreak(text: string, cutIndex: number, lookahead: number = 200): number {
+  if (cutIndex >= text.length) return text.length;
+
+  // --- 向前搜索：找下一个段落起始位置 ---
+  const end = Math.min(text.length, cutIndex + lookahead);
+  const ahead = text.slice(cutIndex, end);
+
+  // 段落起始标志：全角空格（中文缩进）或换行符
+  const paraStart = ahead.search(/[　\n]/);
+  if (paraStart >= 0) {
+    const breakAt = cutIndex + paraStart;
+    // 如果段落标志前有句子结尾标点，在标点处断开更自然
+    const beforePara = text.slice(Math.max(0, breakAt - 2), breakAt);
+    const lastSentenceEnd = Math.max(
+      beforePara.lastIndexOf('。'),
+      beforePara.lastIndexOf('！'),
+      beforePara.lastIndexOf('？'),
+      beforePara.lastIndexOf('\n'),
+    );
+    if (lastSentenceEnd >= 0) {
+      return breakAt - 2 + lastSentenceEnd + 1;
+    }
+    return breakAt;
+  }
+
+  // --- 回退：在 cutIndex 附近找句子结尾标点 ---
+  const lookbackStart = Math.max(0, cutIndex - 80);
+  const behind = text.slice(lookbackStart, cutIndex);
+
+  const lastPeriod = behind.lastIndexOf('。');
+  const lastExcl = behind.lastIndexOf('！');
+  const lastQuest = behind.lastIndexOf('？');
+  const best = Math.max(lastPeriod, lastExcl, lastQuest);
+
+  if (best >= 0) {
+    return lookbackStart + best + 1;
+  }
+
+  return cutIndex;
+}
+
 function paginateWithProgress(
   content: string,
   config: PageConfig,
+  chapters: Chapter[],
   onProgress: (fraction: number, pageCount: number) => void,
   check: () => void,
 ): Page[] {
   const { width, height, fontSize, lineHeight, padding } = config;
 
+  // 计算内容区域（减去页面内边距）
   const contentWidth = width - padding.left - padding.right;
   const contentHeight = height - padding.top - padding.bottom;
 
-  const charsPerLine = Math.floor(contentWidth / fontSize);
-  const linesPerPage = Math.floor(contentHeight / lineHeight);
-  const charsPerPage = Math.max(charsPerLine * linesPerPage, 1);
+  // 计算每页行数
+  const actualLineHeight = fontSize * lineHeight;
+  const linesPerPage = Math.floor(contentHeight / actualLineHeight);
+
+  // 估算每行字符数（考虑中英文混合宽度）
+  // 第一行有 text-indent: 2em，所以少 2 个中文字符的宽度
+  const firstLineWidth = contentWidth - fontSize * 2; // 第一行缩进 2em
+  const normalLineWidth = contentWidth;
+
+  // 用测试字符串估算每行字符数
+  const testStr = '这是测试文字abcABC123这是测试文字abcABC123';
+  const testWidth = measureTextWidth(testStr, fontSize);
+  const avgCharWidth = testWidth / testStr.length;
+
+  const firstLineChars = Math.floor(firstLineWidth / avgCharWidth);
+  const normalLineChars = Math.floor(normalLineWidth / avgCharWidth);
+
+  // 计算每页总字符数
+  // 第一行用 firstLineChars，后续行用 normalLineChars
+  // 此估算仅作为初步分页，主线程会用 DOM 验证并修正溢出的页面
+  const charsPerPage = Math.max(
+    firstLineChars + Math.max(0, linesPerPage - 1) * normalLineChars,
+    normalLineChars, // 至少一行
+  );
 
   const pages: Page[] = [];
   let remaining = content;
   let pageNumber = 1;
   const totalChars = Math.max(content.length, 1);
+  let offset = 0;
 
   while (remaining.length > 0) {
     check();
 
     let cutIndex = Math.min(charsPerPage, remaining.length);
 
+    // 查找自然断点
     if (cutIndex < remaining.length) {
-      const lookback = Math.min(100, cutIndex);
-      const segment = remaining.slice(cutIndex - lookback, cutIndex);
-      const lastNewline = segment.lastIndexOf('\n');
-      if (lastNewline > 0) {
-        cutIndex = cutIndex - lookback + lastNewline + 1;
-      }
+      cutIndex = findNaturalBreak(remaining, cutIndex);
     }
+
+    // 安全检查：确保至少有一些内容
+    if (cutIndex === 0 && remaining.length > 0) {
+      cutIndex = Math.min(normalLineChars, remaining.length);
+    }
+
+    const pageStart = offset;
+    const chapterIndex = getChapterIndexForRange(chapters, pageStart);
 
     pages.push({
       content: remaining.slice(0, cutIndex),
       pageNumber,
+      chapterIndex,
+      chapterTitle: typeof chapterIndex === 'number' ? chapters[chapterIndex]?.title : undefined,
     });
 
     remaining = remaining.slice(cutIndex);
+    offset += cutIndex;
 
     if (pageNumber % 25 === 0 || remaining.length === 0) {
       const processedChars = content.length - remaining.length;
@@ -297,6 +403,7 @@ async function handleParseMessage(message: TxtParseRequest) {
     const pages = paginateWithProgress(
       content,
       pageConfig,
+      chapters,
       (fraction, pageCount) => {
         const percent = 30 + fraction * 65;
         postProgress(
@@ -314,7 +421,7 @@ async function handleParseMessage(message: TxtParseRequest) {
     postProgress(requestId, 'finalizing', 98, '正在整理书籍数据', lastPercentRef);
 
     const book: Book = {
-      id: createUUID(),
+      id: `${filePath || fileName}::${size}`,
       title: fileName.replace(/\.txt$/i, ''),
       filePath,
       content,

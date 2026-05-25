@@ -1,94 +1,107 @@
-import React from 'react';
+import React, { useMemo, useRef } from 'react';
 import { useSettingsStore, PAPER_COLORS } from '../../stores/settingsStore';
+import { useBookStore } from '../../stores/bookStore';
 import '../../styles/book.css';
 
-/* ---------------------------------------------------------------------------
-   Han-style Corner Ornament
-   A reusable Chinese-style decorative corner rendered as inline SVG
-   --------------------------------------------------------------------------- */
-const HanCornerSVG: React.FC = () => (
-  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 10c6 0 10-4 10-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.65"/>
-    <path d="M6 16c10 0 16-6 16-6" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round" opacity="0.55"/>
-    <path d="M6 22c12 0 20-8 20-8" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" opacity="0.45"/>
-    <path d="M6 6h18c6 0 10 4 10 10v18" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" opacity="0.35"/>
-    <path d="M14 6v6M20 6v6M26 6v6" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" opacity="0.28"/>
+const CornerOrnament = (props: { className: string }) => (
+  <svg viewBox="0 0 48 48" className={props.className} fill="none" stroke="currentColor" strokeWidth="1.2">
+    <path d="M4 4C4 4 8 14 14 20C20 26 30 32 44 36" />
+    <path d="M4 4C4 4 14 8 20 14C26 20 32 30 36 44" />
+    <circle cx="4" cy="4" r="2" fill="currentColor" opacity="0.5" />
   </svg>
 );
 
 /* ---------------------------------------------------------------------------
-   Page Component Props
+   页面组件 Props
    --------------------------------------------------------------------------- */
 interface PageProps {
-  /** HTML content string to render on this page */
+  /** 渲染的 HTML 内容字符串（可以是全文，浏览器自动分页） */
   content: string;
-  /** Current page number (1-indexed for display) */
+  /** 当前页码（1-indexed 用于显示） */
   pageNumber: number;
-  /** Whether this is a left-hand page in a two-page spread */
+  /** 是否为双页展开中的左页 */
   isLeft: boolean;
   className?: string;
 }
 
 /* ---------------------------------------------------------------------------
-   Page Component
-   Renders a single book page with paper texture, filigree corners,
-   spine shadow, page curl (right pages), and configurable typography.
+   页面组件
+   使用 CSS Multi-column 自动分页。
+   浏览器自动将内容分成多列，通过 transform 控制显示哪一列。
    --------------------------------------------------------------------------- */
 const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft, className }) => {
-  const { paperBackground, fontSize, fontFamily, lineHeight, nightMode } =
-    useSettingsStore();
+  const { paperBackground, fontSize, fontFamily, lineHeight, nightMode } = useSettingsStore();
+  const { pages, currentPage } = useBookStore();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const paperColor = PAPER_COLORS[paperBackground];
 
-  /* Dynamically build the style object from user settings */
+  const pageHeaderText = useMemo(() => {
+    const active = pages[currentPage];
+    if (!active) return '';
+
+    if (typeof active.chapterTitle === 'string' && active.chapterTitle.trim()) {
+      return active.chapterTitle.trim();
+    }
+
+    if (typeof active.chapterIndex === 'number') {
+      return `第 ${active.chapterIndex + 1} 章`;
+    }
+
+    return '';
+  }, [currentPage, pages]);
+
+  /* 根据用户设置动态构建样式对象 */
   const pageStyle: React.CSSProperties = {
-    backgroundColor: nightMode ? '#1a1a2e' : paperColor,
+    backgroundColor: nightMode ? '#1a1612' : paperColor,
     fontSize: `${fontSize}px`,
     fontFamily:
       fontFamily === 'serif'
-        ? '"Noto Serif", "Source Serif Pro", "Georgia", serif'
+        ? '"Noto Serif SC", "Noto Serif", "Source Serif Pro", "Georgia", serif'
         : fontFamily === 'sans-serif'
-          ? '"Inter", "Noto Sans", "Helvetica Neue", sans-serif'
+          ? '"Noto Sans SC", "Inter", "Noto Sans", "Helvetica Neue", sans-serif'
           : '"JetBrains Mono", "Fira Code", monospace',
     lineHeight,
-    color: nightMode ? '#d4c5a9' : '#2c2c2c',
+    color: nightMode ? '#c4b89a' : '#2c2218',
   };
 
-  /* Determine spine shadow class based on page side */
+  /* 根据页面朝向确定书脊阴影类 */
   const spineClass = isLeft ? 'book-spine-shadow-left' : 'book-spine-shadow-right';
 
-  /* Page curl only appears on right-hand pages */
+  /* 翻页卷角仅出现在右页 */
   const curlClass = !isLeft ? 'page-curl' : '';
 
   return (
-        <div
+    <div
+      ref={containerRef}
       className={`relative overflow-hidden ${spineClass} ${curlClass} paper-texture ${className ?? ''}`}
-      style={pageStyle}
+      style={{ ...pageStyle, height: '100%' }}
     >
-      {/* Han-style corner ornaments */}
-      <div className="filigree filigree-tl text-[#8b6914]">
-        <HanCornerSVG />
-      </div>
-      <div className="filigree filigree-tr text-[#8b6914]">
-        <HanCornerSVG />
-      </div>
-      <div className="filigree filigree-bl text-[#8b6914]">
-        <HanCornerSVG />
-      </div>
-      <div className="filigree filigree-br text-[#8b6914]">
-        <HanCornerSVG />
-      </div>
+      <CornerOrnament className="reader-ornament tl" />
+      <CornerOrnament className="reader-ornament tr" />
+      <CornerOrnament className="reader-ornament bl" />
+      <CornerOrnament className="reader-ornament br" />
 
-      {/* Main content area */}
-      <div
-        className="relative z-[3] px-16 py-12"
-        dangerouslySetInnerHTML={{ __html: content }}
-        style={{ textIndent: '2em' }}
-      />
+      <div className="relative z-[3] page-pad page-grid">
+        <div className="page-header">
+          <div className="page-header-inner">
+            <span className="page-header-text">{pageHeaderText}</span>
+          </div>
+        </div>
 
-      {/* Page number centered at bottom */}
-      <div className="absolute bottom-6 left-0 right-0 text-center z-[3] opacity-50 text-xs tracking-widest select-none">
-        {pageNumber}
+        {/* 页面正文：Worker 已完成分页，直接渲染纯文本 */}
+        <div
+          ref={contentRef}
+          className="page-body"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+
+        <div className="page-footer">
+          <div className="page-footer-inner">
+            <span className="page-footer-text">{pageNumber}</span>
+          </div>
+        </div>
       </div>
     </div>
   );

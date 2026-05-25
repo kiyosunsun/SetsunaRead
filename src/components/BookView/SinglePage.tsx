@@ -1,21 +1,21 @@
 import React, { useEffect, useCallback } from 'react';
 import { useBookStore } from '../../stores/bookStore';
-import { useSettingsStore } from '../../stores/settingsStore';
+import { usePageSize } from '../../hooks/usePageSize';
 import Page from './Page';
 import '../../styles/book.css';
 
 /* ---------------------------------------------------------------------------
-   SinglePage Component
-   Displays one page centered on screen, with keyboard navigation and a
-   subtle drop shadow for depth. Designed as a simpler reading mode.
+   单页组件
+   在屏幕中央显示单页，带键盘导航和柔和的投影深度。
+   作为更简洁的阅读模式设计。
    --------------------------------------------------------------------------- */
 const SinglePage: React.FC = () => {
   const { pages, currentPage, nextPage, prevPage } = useBookStore();
-  const { nightMode } = useSettingsStore();
+  const pageSize = usePageSize();
 
   const pageData = pages[currentPage] ?? null;
 
-  /* ---- Keyboard navigation ---- */
+  /* ---- 键盘导航 ---- */
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement).tagName;
@@ -41,7 +41,7 @@ const SinglePage: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  /* ---- Empty state ---- */
+  /* ---- 空状态 ---- */
   if (pages.length === 0) {
     return (
       <div className="flex items-center justify-center h-full w-full text-gray-400 select-none">
@@ -52,13 +52,14 @@ const SinglePage: React.FC = () => {
 
   return (
     <div className="reader-desk flex items-center justify-center w-full h-full select-none">
-      {/* Centered page with drop shadow */}
+      {/* 居中的页面带投影 */}
       <div
         className="reader-book relative overflow-hidden"
         style={{
-          width: '480px',
-          height: '660px',
-          borderRadius: '6px',
+          width: `${pageSize.width}px`,
+          height: `${pageSize.height}px`,
+          borderRadius: '4px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(184,134,11,0.08)',
           transition: 'box-shadow 0.3s ease',
         }}
       >
@@ -74,15 +75,8 @@ const SinglePage: React.FC = () => {
         )}
       </div>
 
-      {/* Page indicator */}
-      <div
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm tracking-wide select-none"
-        style={{
-          color: nightMode ? 'rgba(212,197,169,0.45)' : 'rgba(0,0,0,0.45)',
-        }}
-      >
-        {pageData?.pageNumber ?? '?'}  {pages.length}
-      </div>
+      {/* 页码指示器 */}
+      {/* A 方案：页码放进纸张内部页脚，外层不再叠加 */}
     </div>
   );
 };

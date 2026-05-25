@@ -1,12 +1,11 @@
 import { create } from 'zustand';
 
 export const PAPER_COLORS = {
-  default: '#f5f1eb',
-  sepia: '#f4ecd8',
-  green: '#c8e6c9',
-  pink: '#f8bbd0',
-  blue: '#bbdefb',
-  dark: '#263238',
+  default: '#f8f2e6',
+  sepia: '#f4ead5',
+  green: '#e8f0e0',
+  kraft: '#d4c4a8',
+  dark: '#1e1a14',
 } as const;
 
 export type PaperBackground = keyof typeof PAPER_COLORS;

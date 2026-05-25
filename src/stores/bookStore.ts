@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Book, Page } from '../types/book';
 
 type PersistedBook = Omit<Book, 'content'>;
@@ -17,8 +17,8 @@ interface BookState {
   closeBook: () => void;
   setPages: (pages: Page[]) => void;
   goToPage: (page: number) => void;
-  nextPage: () => void;
-  prevPage: () => void;
+  nextPage: (step?: number) => void;
+  prevPage: (step?: number) => void;
 }
 
 export const useBookStore = create<BookState>()(
@@ -83,22 +83,25 @@ export const useBookStore = create<BookState>()(
         }
       },
 
-      nextPage: () => {
+      nextPage: (step = 1) => {
         const { currentPage, totalPages } = get();
-        if (currentPage < totalPages - 1) {
-          set({ currentPage: currentPage + 1 });
+        const next = currentPage + step;
+        if (next < totalPages) {
+          set({ currentPage: next });
         }
       },
 
-      prevPage: () => {
+      prevPage: (step = 1) => {
         const { currentPage } = get();
-        if (currentPage > 0) {
-          set({ currentPage: currentPage - 1 });
+        const prev = currentPage - step;
+        if (prev >= 0) {
+          set({ currentPage: prev });
         }
       },
     }),
     {
       name: 'setsuna-book-store',
+      storage: createJSONStorage(() => sessionStorage),
       partialize: (state) => ({ books: state.books }),
     },
   ),

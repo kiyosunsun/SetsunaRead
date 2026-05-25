@@ -64,7 +64,7 @@ const ChapterList: React.FC<ChapterListProps> = ({ isOpen, onClose, chapters }) 
   }, [chapters, currentPage, totalPages, bookContent]);
 
   /* ---- Handle chapter click ---- */
-  const handleChapterClick = (chapter: Chapter, idx: number) => {
+  const handleChapterClick = (chapter: Chapter) => {
     const targetPage = estimateChapterPage(
       chapter.startIndex,
       bookContent,
@@ -78,14 +78,20 @@ const ChapterList: React.FC<ChapterListProps> = ({ isOpen, onClose, chapters }) 
   if (!isOpen) return null;
 
   /* Style helpers */
-  const bgClass = nightMode ? 'bg-neutral-900' : 'bg-white';
-  const borderClass = nightMode ? 'border-neutral-700' : 'border-gray-200';
-  const textClass = nightMode ? 'text-neutral-200' : 'text-gray-800';
   const textMutedClass = nightMode ? 'text-neutral-500' : 'text-gray-400';
-  const hoverClass = nightMode ? 'hover:bg-neutral-800' : 'hover:bg-gray-50';
+  const hoverClass = 'reader-ui-hover';
   const activeClass = nightMode
-    ? 'bg-amber-900/30 text-amber-300 border-l-2 border-amber-500'
-    : 'bg-amber-50 text-amber-700 border-l-2 border-amber-600';
+    ? 'bg-amber-900/30 border-l-2 border-amber-500'
+    : 'bg-amber-50 border-l-2 border-amber-600';
+
+  const panelClassName = cn('border-l', 'reader-ui-surface');
+
+  const closeBtnClass = cn(
+    'p-1.5 rounded-lg transition-colors',
+    'reader-ui-hover',
+    'text-inherit opacity-75 hover:opacity-100',
+  );
+
 
   return (
     <div
@@ -104,14 +110,13 @@ const ChapterList: React.FC<ChapterListProps> = ({ isOpen, onClose, chapters }) 
       {/* ---- Panel (slides in from right) ---- */}
       <div
         className={cn(
-          'relative z-10 w-full max-w-sm h-full border-l shadow-2xl flex flex-col overflow-hidden animate-slide-in-right',
-          bgClass,
-          borderClass,
+          'relative z-10 w-full max-w-sm h-full shadow-2xl flex flex-col overflow-hidden animate-slide-in-right',
+          panelClassName,
         )}
       >
         {/* ---- Header ---- */}
-        <div className={cn('flex items-center justify-between px-5 py-4 border-b shrink-0', borderClass)}>
-          <h2 className={cn('text-lg font-semibold', textClass)}>
+        <div className={cn('flex items-center justify-between px-5 py-4 border-b shrink-0', 'reader-ui-divider')}>
+          <h2 className="text-lg font-semibold">
             章节目录
             {chapters.length > 0 && (
               <span className={cn('ml-2 text-sm font-normal', textMutedClass)}>
@@ -121,10 +126,7 @@ const ChapterList: React.FC<ChapterListProps> = ({ isOpen, onClose, chapters }) 
           </h2>
           <button
             onClick={onClose}
-            className={cn(
-              'p-1.5 rounded-lg transition-colors',
-              nightMode ? 'hover:bg-neutral-700 text-neutral-400' : 'hover:bg-gray-100 text-gray-500',
-            )}
+            className={closeBtnClass}
             title="Close chapter list"
             aria-label="Close chapter list"
           >
@@ -162,11 +164,11 @@ const ChapterList: React.FC<ChapterListProps> = ({ isOpen, onClose, chapters }) 
                 return (
                   <li key={`${chapter.startIndex}-${idx}`} role="option" aria-selected={isActive}>
                     <button
-                      onClick={() => handleChapterClick(chapter, idx)}
+                      onClick={() => handleChapterClick(chapter)}
                       className={cn(
                         'w-full text-left px-5 py-3 text-sm transition-colors border-l-2 border-transparent',
                         hoverClass,
-                        textClass,
+                        'text-inherit',
                         isActive && activeClass,
                       )}
                     >

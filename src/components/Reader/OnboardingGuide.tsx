@@ -93,37 +93,37 @@ function getSteps(): OnboardingStep[] {
       title: '欢迎使用 SetsunaRead',
       description: '一个精美的无干扰阅读体验，让你沉浸在书籍的世界中。让我们来介绍一下。',
       icon: <WelcomeIcon />,
-      gradient: 'from-amber-500/20 via-orange-500/20 to-rose-500/20',
+      gradient: 'from-amber-600/20 via-orange-500/15 to-rose-500/10',
     },
     {
       title: '导入你的书籍',
       description: '点击书架上的"导入"按钮来添加 .txt 文件。我们支持多种编码格式，包括 UTF-8、GBK 和 Big5。',
       icon: <ImportIcon />,
-      gradient: 'from-emerald-500/20 via-teal-500/20 to-cyan-500/20',
+      gradient: 'from-emerald-600/15 via-teal-500/15 to-cyan-500/10',
     },
     {
       title: '仿真双页模式',
       description: '享受类似实体书的双页阅读体验。你可以在工具栏中切换双页、单页和滚动模式。',
       icon: <DualPageIcon />,
-      gradient: 'from-violet-500/20 via-purple-500/20 to-indigo-500/20',
+      gradient: 'from-violet-500/15 via-purple-500/15 to-indigo-500/10',
     },
     {
       title: '自定义设置',
       description: '调整字体大小、行间距、纸张背景和翻页动画，打造属于你的阅读体验。',
       icon: <SettingsIcon />,
-      gradient: 'from-blue-500/20 via-sky-500/20 to-cyan-500/20',
+      gradient: 'from-blue-500/15 via-sky-500/15 to-cyan-500/10',
     },
     {
       title: '书签与搜索',
       description: '使用书签保存你的阅读位置，通过内置搜索功能快速查找内容。',
       icon: <BookmarksIcon />,
-      gradient: 'from-rose-500/20 via-pink-500/20 to-fuchsia-500/20',
+      gradient: 'from-rose-500/15 via-pink-500/15 to-fuchsia-500/10',
     },
     {
       title: '开始阅读',
       description: '一切准备就绪！导入你的第一本书，开始你的阅读之旅吧。',
       icon: <StartIcon />,
-      gradient: 'from-amber-500/20 via-yellow-500/20 to-orange-500/20',
+      gradient: 'from-amber-500/20 via-yellow-500/15 to-orange-500/15',
     },
   ];
 }
@@ -151,19 +151,19 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
 
-  /* Style helpers */
-  const bgClass = nightMode ? 'bg-neutral-900' : 'bg-white';
-  const textClass = nightMode ? 'text-neutral-100' : 'text-gray-900';
-  const textMutedClass = nightMode ? 'text-neutral-400' : 'text-gray-500';
-  const iconColor = nightMode ? 'text-amber-400' : 'text-amber-600';
-  const dotActiveClass = nightMode ? 'bg-amber-400' : 'bg-amber-600';
-  const dotInactiveClass = nightMode ? 'bg-neutral-600' : 'bg-gray-300';
+  /* 样式辅助 — 使用新的木质/铜金设计系统 */
+  const bgClass = nightMode ? 'bg-[#1a1612]' : 'bg-[#faf6ed]';
+  const textClass = nightMode ? 'text-[#d4c5a9]' : 'text-[#2c2218]';
+  const textMutedClass = nightMode ? 'text-[#8a7d6a]' : 'text-[#8a7a6a]';
+  const iconColor = nightMode ? 'text-[#d4a843]' : 'text-[#b8860b]';
+  const dotActiveClass = nightMode ? 'bg-[#d4a843]' : 'bg-[#b8860b]';
+  const dotInactiveClass = nightMode ? 'bg-[#4a3425]' : 'bg-[#d4c4a8]';
   const btnSecondaryClass = nightMode
-    ? 'bg-neutral-700 hover:bg-neutral-600 text-neutral-200'
-    : 'bg-gray-100 hover:bg-gray-200 text-gray-700';
+    ? 'bg-[#242018] hover:bg-[#2c2618] text-[#d4c5a9] border border-[rgba(255,255,255,0.06)]'
+    : 'bg-[#e8dcc4] hover:bg-[#ddd0b8] text-[#4a3425] border border-[#c8b898]';
   const btnPrimaryClass = nightMode
-    ? 'bg-amber-500 hover:bg-amber-400 text-neutral-900'
-    : 'bg-amber-600 hover:bg-amber-500 text-white';
+    ? 'bg-gradient-to-r from-[#8b6914] to-[#a0792d] hover:from-[#a0792d] hover:to-[#b43a2f] text-[#faf6ed]'
+    : 'bg-gradient-to-r from-[#4a3425] to-[#6b4f3a] hover:from-[#6b4f3a] hover:to-[#8b6914] text-[#faf6ed]';
 
   return (
     <div
@@ -178,12 +178,12 @@ const OnboardingGuide: React.FC<OnboardingGuideProps> = ({
         aria-hidden="true"
       />
 
-      {/* ---- Modal ---- */}
+      {/* ---- 模态框 ---- */}
       <div
         className={cn(
           'relative z-10 w-full max-w-lg rounded-2xl border shadow-2xl overflow-hidden mx-4',
           bgClass,
-          nightMode ? 'border-neutral-700' : 'border-gray-200',
+          nightMode ? 'border-[rgba(184,134,11,0.15)]' : 'border-[#c8b898]',
         )}
       >
         {/* ---- Gradient Header ---- */}

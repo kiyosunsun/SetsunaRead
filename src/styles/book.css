@@ -1,29 +1,31 @@
 /* ==========================================================================
-   SetsunaRead - Book Styling
-   Paper textures, spine shadows, filigree ornaments, bookmarks, and night mode
+   SetsunaRead - 书房风格书籍样式
+   纸张纹理、书脊阴影、花饰角、书签与夜间模式
+   设计理念：私人书房 · 藏书阁
+   色调：胡桃木深棕 + 羊皮纸暖黄 + 铜金色点缀
    ========================================================================== */
 
 :root {
-  /* 汉风配色 Token（只做变量声明，不直接改现有选择器） */
-  --han-paper: #f6f1e3;
-  --han-paper-warm: #efe4c7;
-  --han-ink: #1f2328;
-  --han-ink-soft: rgba(31, 35, 40, 0.72);
+  /* 书房配色 Token */
+  --han-paper: #f4ead5;
+  --han-paper-warm: #efe5d0;
+  --han-ink: #2c2218;
+  --han-ink-soft: rgba(44, 34, 24, 0.72);
 
   --han-spine-shadow-strong: rgba(0, 0, 0, 0.25);
   --han-spine-shadow-soft: rgba(0, 0, 0, 0.1);
 
   --han-grain-opacity: 0.04;
 
-  --han-filigree-opacity: 0.18;
+  --han-filigree-opacity: 0.12;
 
   --han-bookmark-clip: #b8860b;
-  --han-bookmark-ribbon-1: #c0392b;
-  --han-bookmark-ribbon-2: #e74c3c;
+  --han-bookmark-ribbon-1: #8b2500;
+  --han-bookmark-ribbon-2: #a0522d;
 
   /* 夜间模式 Token */
-  --han-night-bg: #1a1a2e;
-  --han-night-text: #d4c5a9;
+  --han-night-bg: #1a1612;
+  --han-night-text: #c4b89a;
   --han-night-grain-opacity: 0.02;
   --han-night-spine-shadow-strong: rgba(0, 0, 0, 0.5);
   --han-night-spine-shadow-soft: rgba(0, 0, 0, 0.3);
@@ -31,41 +33,143 @@
   --han-night-curl-1: rgba(255, 255, 255, 0.04);
   --han-night-curl-2: rgba(255, 255, 255, 0.01);
   --han-night-bookmark-clip: #8b6914;
-  --han-night-bookmark-ribbon-1: #8b2020;
-  --han-night-bookmark-ribbon-2: #a52a2a;
+  --han-night-bookmark-ribbon-1: #8b2500;
+  --han-night-bookmark-ribbon-2: #a0522d;
 }
 
-/* ---- Reader desk / book / paper (token-driven) ---- */
-.reader-desk {
-  position: relative;
-  background: var(--desk-bg);
+/* ---- UI 表面（面板/工具栏） ---- */
+.reader-ui-surface {
+  background: rgba(30, 24, 16, 0.98);
+  border-color: rgba(184, 134, 11, 0.12);
+  color: #d4c5a9;
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
+.reader-ui-backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.reader-ui-hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='light'] .reader-ui-hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.reader-ui-muted {
+  color: rgba(212, 197, 169, 0.5);
+}
+
+[data-theme='light'] .reader-ui-muted {
+  color: rgba(90, 74, 58, 0.5);
+}
+
+.reader-ui-divider {
+  border-color: rgba(184, 134, 11, 0.12);
+}
+
+.reader-ui-accent {
+  color: #b8860b;
+}
+
+[data-theme='dark'] .reader-ui-accent {
+  color: #c4982f;
+}
+
+
+/* ---- 页面页眉/页脚（纸张内共享 padding） ---- */
+.page-pad {
+  padding-left: 3rem;
+  padding-right: 3rem;
+}
+
+.page-grid {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.page-header-inner,
+.page-footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-header {
+  padding-top: 1.5rem;
+}
+
+.page-body {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+  text-align: justify;
+  min-height: 0;
+}
+
+.page-footer {
+  padding-bottom: 1.5rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 0.5rem;
+}
+
+[data-theme='dark'] .page-footer {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+
+.page-header-text,
+.page-footer-text {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  opacity: 0.5;
+  user-select: none;
+  color: #5a4a3a;
+}
+
+[data-theme='dark'] .page-header-text,
+[data-theme='dark'] .page-footer-text {
+  color: rgba(196, 184, 154, 0.4);
+}
+
+/* 书桌背景 - 深色木质 */
 .reader-desk::before {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
   background-image:
-    radial-gradient(1200px 600px at 50% 20%, rgba(255, 255, 255, 0.06), transparent 60%),
-    radial-gradient(900px 500px at 30% 80%, rgba(0, 0, 0, 0.12), transparent 55%);
-  opacity: 0.85;
+    radial-gradient(ellipse at 50% 30%, rgba(60, 40, 20, 0.15) 0%, transparent 70%),
+    linear-gradient(180deg, #2a2218 0%, #1a1410 50%, #0d0b08 100%);
+  opacity: 1;
 }
 
 .reader-book {
-  box-shadow: var(--shadow-book);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(184, 134, 11, 0.08);
 }
 
 .reader-paper {
   background: var(--paper-bg);
   color: var(--ink-primary);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.10);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.08);
 }
 
 /* ---------------------------------------------------------------------------
-   Paper Texture - SVG noise overlay for realistic paper feel
-   Uses an inline SVG data URI to generate subtle noise grain
+   纸张纹理 - SVG 噪点覆盖层，模拟真实纸张纤维质感
    --------------------------------------------------------------------------- */
 .paper-texture {
   position: relative;
@@ -82,37 +186,56 @@
   z-index: 1;
 }
 
-.paper-texture::after {
+
+/* ---- 纸张边缘磨损 + 花饰 ---- */
+.reader-paper {
+  position: relative;
+  overflow: hidden;
+}
+
+.reader-paper::before {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 2;
   background:
-    radial-gradient(120% 90% at 50% 45%, transparent 56%, rgba(0,0,0,0.06) 100%),
-    linear-gradient(90deg, rgba(0,0,0,0.06), transparent 20%, transparent 80%, rgba(0,0,0,0.06));
-  opacity: 0.16;
+    radial-gradient(120px 80px at 0% 0%, var(--paper-edge), transparent 70%),
+    radial-gradient(120px 80px at 100% 0%, var(--paper-edge), transparent 70%),
+    radial-gradient(120px 80px at 0% 100%, var(--paper-edge), transparent 70%),
+    radial-gradient(120px 80px at 100% 100%, var(--paper-edge), transparent 70%);
+  opacity: 0.22;
 }
 
+.reader-ornament {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  opacity: 0.8;
+  color: var(--ornament);
+}
+
+.reader-ornament.tl { top: 14px; left: 14px; }
+.reader-ornament.tr { top: 14px; right: 14px; transform: scaleX(-1); }
+.reader-ornament.bl { bottom: 14px; left: 14px; transform: scaleY(-1); }
+.reader-ornament.br { bottom: 14px; right: 14px; transform: scale(-1); }
+
 /* ---------------------------------------------------------------------------
-   Book Spine Shadows - Inner shadows that simulate the binding gutter
-   Applied to left and right pages of a spread respectively
+   书脊阴影 - 模拟装订凹槽的内阴影
    --------------------------------------------------------------------------- */
 .book-spine-shadow-left {
   box-shadow:
-    inset 12px 0 20px -8px rgba(0, 0, 0, 0.25),
-    inset 2px 0 4px -1px rgba(0, 0, 0, 0.1);
+    inset 20px 0 30px -15px rgba(0, 0, 0, 0.12),
+    inset 2px 0 4px -1px rgba(0, 0, 0, 0.08);
 }
 
 .book-spine-shadow-right {
   box-shadow:
-    inset -12px 0 20px -8px rgba(0, 0, 0, 0.25),
-    inset -2px 0 4px -1px rgba(0, 0, 0, 0.1);
+    inset -20px 0 30px -15px rgba(0, 0, 0, 0.12),
+    inset -2px 0 4px -1px rgba(0, 0, 0, 0.08);
 }
 
 /* ---------------------------------------------------------------------------
-   Page Curl - Corner curl effect on the bottom-right of right-hand pages
-   Uses a pseudo-element with a diagonal gradient to simulate a lifted corner
+   翻页卷角 - 右页右下角的翻角效果
    --------------------------------------------------------------------------- */
 .page-curl {
   position: relative;
@@ -123,11 +246,11 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   background: linear-gradient(
     225deg,
-    rgba(0, 0, 0, 0.08) 0%,
+    rgba(0, 0, 0, 0.06) 0%,
     rgba(0, 0, 0, 0.02) 40%,
     transparent 50%
   );
@@ -138,13 +261,12 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Filigree - Victorian ornamental corner decorations
-   Positioned absolutely in each corner of the page
+   花饰角 - 维多利亚风格装饰角
    --------------------------------------------------------------------------- */
 .filigree {
   position: absolute;
   pointer-events: none;
-  opacity: 0.18;
+  opacity: 0.12;
   z-index: 2;
 }
 
@@ -172,8 +294,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Bookmark Clip & Ribbon
-   The clip sits at the top edge of the page; the ribbon hangs down
+   书签夹 & 丝带
    --------------------------------------------------------------------------- */
 .bookmark-clip {
   position: absolute;
@@ -192,13 +313,13 @@
   width: 14px;
   height: 72px;
   z-index: 4;
-  background: linear-gradient(180deg, #b43a2f 0%, #d34b3a 55%, #9f2f28 100%);
+  background: linear-gradient(180deg, #8b2500 0%, #a0522d 55%, #8b2500 100%);
   clip-path: polygon(0% 0%, 100% 0%, 100% 85%, 50% 100%, 0% 85%);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
 
 /* ---------------------------------------------------------------------------
-   Dual Page Flip Layers - Single-page turn with shadow and highlight overlays
+   双页翻页层 - 单页翻转 + 阴影和高光覆盖
    --------------------------------------------------------------------------- */
 .page-shell {
   position: relative;
@@ -282,12 +403,11 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Night Mode - Dark theme overrides for comfortable nighttime reading
-   Inverts paper colors, reduces brightness, adjusts text and shadows
+   夜间模式 - 深暖灰纸张 + 暖米色文字
    --------------------------------------------------------------------------- */
 .night-mode {
-  background-color: #1a1a2e !important;
-  color: #d4c5a9 !important;
+  background-color: #1a1612 !important;
+  color: #c4b89a !important;
 }
 
 .night-mode .paper-texture::before {
@@ -300,18 +420,19 @@
 
 .night-mode .book-spine-shadow-left {
   box-shadow:
-    inset 12px 0 20px -8px rgba(0, 0, 0, 0.5),
-    inset 2px 0 4px -1px rgba(0, 0, 0, 0.3);
+    inset 20px 0 30px -15px rgba(0, 0, 0, 0.2),
+    inset 2px 0 4px -1px rgba(0, 0, 0, 0.15);
 }
 
 .night-mode .book-spine-shadow-right {
   box-shadow:
-    inset -12px 0 20px -8px rgba(0, 0, 0, 0.5),
-    inset -2px 0 4px -1px rgba(0, 0, 0, 0.3);
+    inset -20px 0 30px -15px rgba(0, 0, 0, 0.2),
+    inset -2px 0 4px -1px rgba(0, 0, 0, 0.15);
 }
 
 .night-mode .filigree {
   opacity: 0.08;
+  color: rgba(184, 134, 11, 0.3);
 }
 
 .night-mode .page-curl::after {
@@ -330,8 +451,8 @@
 .night-mode .bookmark-ribbon {
   background: linear-gradient(
     180deg,
-    #8b2020 0%,
-    #a52a2a 60%,
-    #8b2020 100%
+    #8b2500 0%,
+    #a0522d 60%,
+    #8b2500 100%
   );
 }

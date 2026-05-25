@@ -62,7 +62,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
     addBookmark({
       bookId,
       pageNumber: currentPage,
-      title: `Page ${currentPage + 1}`,
+      title: `第 ${currentPage + 1} 页`,
     });
   };
 
@@ -77,16 +77,18 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
     onClose();
   };
 
-  /* Don't render when closed */
   if (!isOpen) return null;
 
-  /* Style helpers */
-  const bgClass = nightMode ? 'bg-neutral-900' : 'bg-white';
-  const borderClass = nightMode ? 'border-neutral-700' : 'border-gray-200';
-  const textClass = nightMode ? 'text-neutral-200' : 'text-gray-800';
   const textMutedClass = nightMode ? 'text-neutral-500' : 'text-gray-400';
-  const hoverClass = nightMode ? 'hover:bg-neutral-800' : 'hover:bg-gray-50';
-  const btnBgClass = nightMode ? 'bg-neutral-700' : 'bg-gray-100';
+  const hoverClass = 'reader-ui-hover';
+
+  const panelClassName = cn('border-l', 'reader-ui-surface');
+  const backdropClassName = 'reader-ui-backdrop';
+  const closeBtnClass = cn(
+    'p-1.5 rounded-lg transition-colors',
+    'reader-ui-hover',
+    'text-inherit opacity-75 hover:opacity-100',
+  );
 
   return (
     <div
@@ -97,7 +99,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
     >
       {/* ---- Backdrop ---- */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className={cn('absolute inset-0', backdropClassName)}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -106,13 +108,12 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
       <div
         className={cn(
           'relative z-10 w-full max-w-sm h-full border-l shadow-2xl flex flex-col overflow-hidden animate-slide-in-right',
-          bgClass,
-          borderClass,
+          panelClassName,
         )}
       >
         {/* ---- Header ---- */}
-        <div className={cn('flex items-center justify-between px-5 py-4 border-b shrink-0', borderClass)}>
-          <h2 className={cn('text-lg font-semibold', textClass)}>
+        <div className={cn('flex items-center justify-between px-5 py-4 border-b shrink-0', 'reader-ui-divider')}>
+          <h2 className="text-lg font-semibold text-inherit">
             书签
             {bookBookmarks.length > 0 && (
               <span className={cn('ml-2 text-sm font-normal', textMutedClass)}>
@@ -122,10 +123,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
           </h2>
           <button
             onClick={onClose}
-            className={cn(
-              'p-1.5 rounded-lg transition-colors',
-              nightMode ? 'hover:bg-neutral-700 text-neutral-400' : 'hover:bg-gray-100 text-gray-500',
-            )}
+            className={closeBtnClass}
             title="Close bookmarks"
             aria-label="Close bookmarks"
           >
@@ -137,14 +135,15 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
 
         {/* ---- Add bookmark button ---- */}
         {bookId && (
-          <div className={cn('px-5 py-3 border-b', borderClass)}>
+          <div className={cn('px-5 py-3 border-b', 'reader-ui-divider')}>
             <button
               onClick={isCurrentPageBookmarked ? undefined : handleAddBookmark}
               disabled={isCurrentPageBookmarked}
               className={cn(
                 'w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                hoverClass,
                 isCurrentPageBookmarked
-                  ? cn('opacity-50 cursor-not-allowed', btnBgClass, textMutedClass)
+                  ? cn('opacity-50 cursor-not-allowed', 'bg-black/10', textMutedClass)
                   : cn('bg-[#b43a2f] text-white hover:bg-[#922f27]'),
               )}
               title={isCurrentPageBookmarked ? '当前页已添加书签' : '添加书签到当前页'}
@@ -182,9 +181,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                   d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
                 />
               </svg>
-              <p className={cn('text-sm', textMutedClass)}>
-                请先打开一本书来添加书签
-              </p>
+              <p className={cn('text-sm', textMutedClass)}>请先打开一本书来添加书签</p>
             </div>
           ) : bookBookmarks.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full px-6 text-center">
@@ -201,9 +198,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                   d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
                 />
               </svg>
-              <p className={cn('text-sm', textMutedClass)}>
-                暂无书签，点击上方按钮添加
-              </p>
+              <p className={cn('text-sm', textMutedClass)}>暂无书签，点击上方按钮添加</p>
             </div>
           ) : (
             <ul className="py-1" role="listbox" aria-label="Bookmarks">
@@ -218,7 +213,6 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                         isCurrent && (nightMode ? 'bg-[#b43a2f]/18' : 'bg-[#b43a2f]/8'),
                       )}
                     >
-                      {/* Bookmark icon */}
                       <div className="shrink-0">
                         <svg
                           className={cn('w-5 h-5', isCurrent ? 'text-[#b43a2f]' : textMutedClass)}
@@ -229,15 +223,11 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                         </svg>
                       </div>
 
-                      {/* Bookmark info (clickable) */}
-                      <button
-                        onClick={() => handleBookmarkClick(bookmark)}
-                        className="flex-1 text-left min-w-0"
-                      >
+                      <button onClick={() => handleBookmarkClick(bookmark)} className="flex-1 text-left min-w-0">
                         <span
                           className={cn(
                             'block text-sm font-medium truncate',
-                            isCurrent ? 'text-[#b43a2f]' : textClass,
+                            isCurrent ? 'text-[#b43a2f]' : 'text-inherit',
                           )}
                         >
                           {bookmark.title}
@@ -247,12 +237,13 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
                         </span>
                       </button>
 
-                      {/* Remove button */}
                       <button
                         onClick={() => handleRemoveBookmark(bookmark.id)}
                         className={cn(
                           'shrink-0 p-1.5 rounded-lg transition-colors',
-                          nightMode ? 'hover:bg-neutral-700 text-neutral-500 hover:text-red-400' : 'hover:bg-gray-100 text-gray-400 hover:text-red-500',
+                          hoverClass,
+                          'text-inherit opacity-60 hover:opacity-100',
+                          'hover:text-red-500',
                         )}
                         title="Remove bookmark"
                         aria-label={`Remove bookmark: ${bookmark.title}`}
@@ -271,7 +262,7 @@ const BookmarkPanel: React.FC<BookmarkPanelProps> = ({ isOpen, onClose }) => {
 
         {/* ---- Footer: page indicator ---- */}
         {bookId && totalPages > 0 && (
-          <div className={cn('px-5 py-3 border-t text-center shrink-0', borderClass)}>
+          <div className={cn('px-5 py-3 border-t text-center shrink-0', 'reader-ui-divider')}>
             <span className={cn('text-xs', textMutedClass)}>
               当前第 {currentPage + 1} 页，共 {totalPages} 页
             </span>

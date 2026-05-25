@@ -10,7 +10,8 @@ type WorkerRequestMsg =
       requestId: string;
       fileName: string;
       filePath: string;
-      buffer: ArrayBuffer;
+      buffer?: ArrayBuffer;
+      content?: string;
       pageConfig: PageConfig;
     }
   | { type: 'cancel'; requestId: string };
@@ -157,50 +158,125 @@ export function parseChapters(content: string): Chapter[] {
 // --- Pagination ---
 
 /**
- * Split content into pages based on the given PageConfig dimensions.
- * Uses a simple character-count estimation for page breaks.
+ * 在主线程中用隐藏 DOM 容器精确分页。
+ * 使用与实际渲染完全相同的样式测量，确保分页结果准确。
  */
 export function paginateContent(
   content: string,
   config: PageConfig,
 ): Page[] {
-  const { width, height, fontSize, lineHeight, padding } = config;
+  const { width, height, fontSize, lineHeight, fontFamily, padding } = config;
 
-  const contentWidth = width - padding.left - padding.right;
-  const contentHeight = height - padding.top - padding.bottom;
+  // 创建隐藏的测量容器（与 Page 组件样式完全一致）
+  const measureEl = document.createElement('div');
+  measureEl.style.position = 'absolute';
+  measureEl.style.visibility = 'hidden';
+  measureEl.style.top = '-9999px';
+  measureEl.style.left = '-9999px';
+  measureEl.style.width = `${width}px`;
+  measureEl.style.height = `${height}px`;
+  measureEl.style.fontSize = `${fontSize}px`;
+  measureEl.style.fontFamily =
+    fontFamily === 'serif'
+      ? '"Noto Serif SC", "Noto Serif", "Source Serif Pro", Georgia, serif'
+      : fontFamily === 'sans-serif'
+        ? '"Noto Sans SC", "Inter", "Noto Sans", "Helvetica Neue", sans-serif'
+        : '"JetBrains Mono", "Fira Code", monospace';
+  measureEl.style.lineHeight = `${lineHeight}`;
+  measureEl.style.paddingTop = `${padding.top}px`;
+  measureEl.style.paddingBottom = `${padding.bottom}px`;
+  measureEl.style.paddingLeft = `${padding.left}px`;
+  measureEl.style.paddingRight = `${padding.right}px`;
+  measureEl.style.overflow = 'hidden';
+  measureEl.style.whiteSpace = 'pre-wrap';
+  measureEl.style.wordWrap = 'break-word';
+  measureEl.style.overflowWrap = 'break-word';
+  measureEl.style.textAlign = 'justify';
 
-  // Estimate characters per line and lines per page
-  const charsPerLine = Math.floor(contentWidth / fontSize);
-  const linesPerPage = Math.floor(contentHeight / lineHeight);
-  const charsPerPage = Math.max(charsPerLine * linesPerPage, 1);
+  document.body.appendChild(measureEl);
 
-  const pages: Page[] = [];
-  let remaining = content;
-  let pageNumber = 1;
+  try {
+    const pages: Page[] = [];
+    let remaining = content;
+    let pageNumber = 1;
 
-  while (remaining.length > 0) {
-    let cutIndex = Math.min(charsPerPage, remaining.length);
+    while (remaining.length > 0) {
+      // 设置内容并测量
+      measureEl.textContent = remaining;
 
-    // Try to break at a natural boundary (newline or paragraph)
-    if (cutIndex < remaining.length) {
-      const lookback = Math.min(100, cutIndex);
-      const segment = remaining.slice(cutIndex - lookback, cutIndex);
-      const lastNewline = segment.lastIndexOf('\n');
-      if (lastNewline > 0) {
-        cutIndex = cutIndex - lookback + lastNewline + 1;
+      // 如果内容能完全放下，直接返回
+      if (measureEl.scrollHeight <= measureEl.clientHeight) {
+        pages.push({
+          content: remaining,
+          pageNumber,
+        });
+        break;
       }
+
+      // 二分查找：找到能放下多少字符
+      let low = 0;
+      let high = remaining.length;
+      let best = 0;
+
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        measureEl.textContent = remaining.slice(0, mid);
+
+        if (measureEl.scrollHeight <= measureEl.clientHeight) {
+          best = mid;
+          low = mid + 1;
+        } else {
+          high = mid - 1;
+        }
+      }
+
+      // 找到自然断点（段落或句子边界）
+      let cutIndex = best;
+      if (cutIndex < remaining.length) {
+        const lookahead = 200;
+        const ahead = remaining.slice(cutIndex, cutIndex + lookahead);
+        const paraStart = ahead.search(/[　\n]/);
+        if (paraStart >= 0) {
+          const breakAt = cutIndex + paraStart;
+          const beforePara = remaining.slice(Math.max(0, breakAt - 2), breakAt);
+          const lastSentenceEnd = Math.max(
+            beforePara.lastIndexOf('。'),
+            beforePara.lastIndexOf('！'),
+            beforePara.lastIndexOf('？'),
+            beforePara.lastIndexOf('\n'),
+          );
+          cutIndex = lastSentenceEnd >= 0 ? breakAt - 2 + lastSentenceEnd + 1 : breakAt;
+        } else {
+          const lookbackStart = Math.max(0, cutIndex - 80);
+          const behind = remaining.slice(lookbackStart, cutIndex);
+          const bestPunct = Math.max(
+            behind.lastIndexOf('。'),
+            behind.lastIndexOf('！'),
+            behind.lastIndexOf('？'),
+          );
+          if (bestPunct >= 0) cutIndex = lookbackStart + bestPunct + 1;
+        }
+      }
+
+      // 安全检查
+      if (cutIndex === 0) {
+        cutIndex = Math.min(100, remaining.length);
+      }
+
+      pages.push({
+        content: remaining.slice(0, cutIndex),
+        pageNumber,
+      });
+
+      remaining = remaining.slice(cutIndex);
+      pageNumber++;
     }
 
-    pages.push({
-      content: remaining.slice(0, cutIndex),
-      pageNumber,
-    });
-
-    remaining = remaining.slice(cutIndex);
-    pageNumber++;
+    return pages;
+  } finally {
+    // 清理测量容器
+    document.body.removeChild(measureEl);
   }
-
-  return pages;
 }
 
 // --- Main Hook ---
@@ -344,3 +420,5 @@ export function useBookParser(): UseBookParserReturn {
 
   return { book, chapters, pages, loading, progress, cancel, loadFile };
 }
+
+export default useBookParser;

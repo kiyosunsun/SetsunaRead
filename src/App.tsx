@@ -12,6 +12,7 @@ import ImportProgressOverlay from './components/Reader/ImportProgressOverlay';
 import OnboardingGuide from './components/Reader/OnboardingGuide';
 import { useBookParser } from './hooks/useBookParser';
 import { useOnboarding } from './hooks/useOnboarding';
+import { usePageSize } from './hooks/usePageSize';
 import { useBookStore } from './stores/bookStore';
 import { useSettingsStore } from './stores/settingsStore';
 
@@ -31,6 +32,9 @@ function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [bookmarkPanelOpen, setBookmarkPanelOpen] = useState(false);
 
+  /* ---- Bookshelf importing UI ---- */
+  const [importingTitle, setImportingTitle] = useState('');
+
   /* ---- Onboarding ---- */
   const {
     showGuide,
@@ -43,7 +47,7 @@ function App() {
   } = useOnboarding();
 
   /* ---- Core hooks ---- */
-  const { book, chapters, pages, loadFile, loading, progress, cancel } = useBookParser();
+  const { book, chapters, pages: workerPages, loadFile, loading, progress, cancel } = useBookParser();
   const {
     addBook,
     openBook,
@@ -52,18 +56,20 @@ function App() {
   } = useBookStore();
   const currentBook = useBookStore((s) => s.currentBook);
   const { fontSize, lineHeight, nightMode } = useSettingsStore();
+  const pageSize = usePageSize();
 
   /* ---- Shared theme ---- */
   const pageConfig = useMemo(
     () => ({
-      width: 480,
-      height: 660,
+      width: pageSize.width,
+      height: pageSize.height,
       fontSize,
       fontFamily: 'serif',
       lineHeight,
-      padding: { top: 40, bottom: 40, left: 40, right: 40 },
+      /* 与 CSS 保持一致：page-pad(3rem=48px) + header(1.5rem=24px) + body(0.75rem*2=24px) + footer(1.5rem+0.5rem=32px) */
+      padding: { top: 48, bottom: 48, left: 48, right: 48 },
     }),
-    [fontSize, lineHeight],
+    [pageSize.width, pageSize.height, fontSize, lineHeight],
   );
 
   /* ---- Sync book metadata to Zustand store ---- */
@@ -74,18 +80,17 @@ function App() {
     }
   }, [book, addBook, openBook]);
 
-
   /* ---- Sync pages from parser result to store ---- */
   useEffect(() => {
-    if (book && pages.length > 0) {
-      storeSetPages(pages);
+    if (book && workerPages.length > 0) {
+      storeSetPages(workerPages);
 
       const state = useBookStore.getState();
-      if (state.currentPage >= pages.length && pages.length > 0) {
-        useBookStore.setState({ currentPage: pages.length - 1 });
+      if (state.currentPage >= workerPages.length && workerPages.length > 0) {
+        useBookStore.setState({ currentPage: workerPages.length - 1 });
       }
     }
-  }, [book, pages, storeSetPages]);
+  }, [book, workerPages, storeSetPages]);
 
   /* ---- Shared theme ---- */
   const theme = nightMode ? 'dark' : 'light';
@@ -142,21 +147,23 @@ function App() {
      ================================================================ */
   return (
     <div data-theme={theme} className="flex flex-col h-screen w-screen overflow-hidden">
-      {/* ---- Reading area ---- */}
+      {/* ---- 阅读区域 ---- */}
       <div className="flex-1 relative overflow-hidden">
-        {/* Back to bookshelf button */}
+        {/* 返回书架按钮 */}
         <button
           onClick={() => closeBook()}
-          className="absolute top-4 left-4 z-20 p-2 rounded-lg transition-all duration-200 hover:scale-105"
+          className="absolute top-4 left-4 z-20 w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-105"
           style={{
-            backgroundColor: nightMode ? 'rgba(38,38,38,0.8)' : 'rgba(255,255,255,0.8)',
-            color: nightMode ? 'rgba(212,197,169,0.7)' : 'rgba(0,0,0,0.6)',
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            color: 'rgba(212,197,169,0.6)',
+            backdropFilter: 'blur(8px)',
           }}
           title="返回书架"
           aria-label="返回书架"
         >
           <svg
-            className="w-5 h-5"
+            className="w-[18px] h-[18px]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -185,23 +192,10 @@ function App() {
       />
 
       {/* ---- Overlay panels ---- */}
-      <SettingsPanel
-        isOpen={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-      />
-      <ChapterList
-        isOpen={chapterListOpen}
-        onClose={() => setChapterListOpen(false)}
-        chapters={chapters}
-      />
-      <BookmarkPanel
-        isOpen={bookmarkPanelOpen}
-        onClose={() => setBookmarkPanelOpen(false)}
-      />
-      <SearchPanel
-        isOpen={searchOpen}
-        onClose={() => setSearchOpen(false)}
-      />
+      <SettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <ChapterList isOpen={chapterListOpen} onClose={() => setChapterListOpen(false)} chapters={chapters} />
+      <BookmarkPanel isOpen={bookmarkPanelOpen} onClose={() => setBookmarkPanelOpen(false)} />
+      <SearchPanel isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
 
       {/* ---- Onboarding Guide ---- */}
       <OnboardingGuide

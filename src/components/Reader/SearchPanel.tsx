@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import { useSettingsStore } from '../../stores/settingsStore';
-import { useSearch, type SearchResult } from '../../hooks/useSearch';
+import { useSearch } from '../../hooks/useSearch';
 import { cn } from '../../lib/utils';
 
 /* ---------------------------------------------------------------------------
@@ -39,7 +39,6 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
   /* ---- Auto-focus input when opened ---- */
   useEffect(() => {
     if (isOpen && inputRef.current) {
-      // Small delay to allow the animation to start
       const timer = setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
@@ -96,19 +95,23 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
     inputRef.current?.focus();
   }, [clearSearch]);
 
-  /* Don't render when closed */
   if (!isOpen) return null;
 
-  /* Style helpers */
-  const bgClass = nightMode ? 'bg-neutral-900' : 'bg-white';
-  const borderClass = nightMode ? 'border-neutral-700' : 'border-gray-200';
-  const textClass = nightMode ? 'text-neutral-200' : 'text-gray-800';
-  const textMutedClass = nightMode ? 'text-neutral-500' : 'text-gray-400';
-  const hoverClass = nightMode ? 'hover:bg-neutral-800' : 'hover:bg-gray-50';
+  const hoverClass = 'reader-ui-hover';
   const inputBgClass = nightMode ? 'bg-neutral-800' : 'bg-gray-100';
   const inputBorderClass = nightMode ? 'border-neutral-600' : 'border-gray-300';
   const highlightBgClass = nightMode ? 'bg-amber-600/30' : 'bg-amber-200';
-  const activeBgClass = nightMode ? 'bg-neutral-700' : 'bg-gray-100';
+  const activeBgClass = nightMode ? 'bg-white/10' : 'bg-black/5';
+
+  const textMutedClass = nightMode ? 'text-neutral-500' : 'text-gray-400';
+
+  const panelClassName = cn('border-l', 'reader-ui-surface');
+  const backdropClassName = 'reader-ui-backdrop';
+  const closeBtnClass = cn(
+    'p-1.5 rounded-lg transition-colors',
+    'reader-ui-hover',
+    'text-inherit opacity-75 hover:opacity-100',
+  );
 
   return (
     <div
@@ -120,7 +123,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
     >
       {/* ---- Backdrop ---- */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className={cn('absolute inset-0', backdropClassName)}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -129,19 +132,15 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
       <div
         className={cn(
           'relative z-10 w-full max-w-sm h-full border-l shadow-2xl flex flex-col overflow-hidden animate-slide-in-right',
-          bgClass,
-          borderClass,
+          panelClassName,
         )}
       >
         {/* ---- Header ---- */}
-        <div className={cn('flex items-center justify-between px-5 py-4 border-b shrink-0', borderClass)}>
-          <h2 className={cn('text-lg font-semibold', textClass)}>搜索</h2>
+        <div className={cn('flex items-center justify-between px-5 py-4 border-b shrink-0', 'reader-ui-divider')}>
+          <h2 className="text-lg font-semibold text-inherit">搜索</h2>
           <button
             onClick={onClose}
-            className={cn(
-              'p-1.5 rounded-lg transition-colors',
-              nightMode ? 'hover:bg-neutral-700 text-neutral-400' : 'hover:bg-gray-100 text-gray-500',
-            )}
+            className={closeBtnClass}
             title="Close search"
             aria-label="Close search"
           >
@@ -152,7 +151,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* ---- Search Input ---- */}
-        <div className={cn('px-5 py-3 border-b', borderClass)}>
+        <div className={cn('px-5 py-3 border-b', 'reader-ui-divider')}>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg
@@ -162,7 +161,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                 stroke="currentColor"
                 strokeWidth={2}
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 9 9 0 0114 0z" />
               </svg>
             </div>
             <input
@@ -176,7 +175,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                 inputBgClass,
                 inputBorderClass,
                 'focus:border-amber-500',
-                textClass,
+                'text-inherit',
               )}
               aria-label="Search query"
             />
@@ -217,7 +216,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                     onClick={prevResult}
                     className={cn(
                       'p-1 rounded transition-colors',
-                      nightMode ? 'hover:bg-neutral-700 text-neutral-400' : 'hover:bg-gray-100 text-gray-500',
+                      hoverClass,
+                      'text-inherit opacity-75 hover:opacity-100',
                     )}
                     title="Previous result (Shift+Enter)"
                     aria-label="Previous result"
@@ -230,7 +230,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                     onClick={nextResult}
                     className={cn(
                       'p-1 rounded transition-colors',
-                      nightMode ? 'hover:bg-neutral-700 text-neutral-400' : 'hover:bg-gray-100 text-gray-500',
+                      hoverClass,
+                      'text-inherit opacity-75 hover:opacity-100',
                     )}
                     title="Next result (Enter)"
                     aria-label="Next result"
@@ -262,12 +263,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              <p className={cn('text-sm', textMutedClass)}>
-                输入关键词搜索书中内容
-              </p>
-              <p className={cn('text-xs mt-2', textMutedClass)}>
-                按 Enter 下一个，Shift+Enter 上一个
-              </p>
+              <p className={cn('text-sm', textMutedClass)}>输入关键词搜索书中内容</p>
+              <p className={cn('text-xs mt-2', textMutedClass)}>按 Enter 下一个，Shift+Enter 上一个</p>
             </div>
           ) : results.length === 0 && !isSearching ? (
             <div className="flex flex-col items-center justify-center h-full px-6 text-center">
@@ -281,12 +278,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  d="M9.172 16.172a4 4 0 0 1 5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"
                 />
               </svg>
-              <p className={cn('text-sm', textMutedClass)}>
-                未找到"{query}"的相关结果
-              </p>
+              <p className={cn('text-sm', textMutedClass)}>未找到"{query}"的相关结果</p>
             </div>
           ) : (
             <ul className="py-1" role="listbox" aria-label="Search results">
@@ -309,7 +304,6 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                         isActive && activeBgClass,
                       )}
                     >
-                      {/* Page number badge */}
                       <div className="flex items-center gap-2 mb-1">
                         <span
                           className={cn(
@@ -325,8 +319,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
                         </span>
                       </div>
 
-                      {/* Context with highlighted match */}
-                      <p className={cn('text-sm leading-relaxed', textClass)}>
+                      <p className="text-sm leading-relaxed text-inherit">
                         {contextParts.map((part, partIndex) =>
                           part.isMatch ? (
                             <mark
@@ -354,15 +347,12 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ isOpen, onClose }) => {
 
         {/* ---- Footer: keyboard hints ---- */}
         {query && results.length > 0 && (
-          <div className={cn('px-5 py-3 border-t text-center shrink-0', borderClass)}>
-            <span className={cn('text-xs', textMutedClass)}>
-              Enter 下一个 / Shift+Enter 上一个 / Esc 关闭
-            </span>
+          <div className={cn('px-5 py-3 border-t text-center shrink-0', 'reader-ui-divider')}>
+            <span className={cn('text-xs', textMutedClass)}>Enter 下一个 / Shift+Enter 上一个 / Esc 关闭</span>
           </div>
         )}
       </div>
 
-      {/* ---- Inline keyframe for slide-in animation ---- */}
       <style>{`
         @keyframes slideInRight {
           from { transform: translateX(100%); }
