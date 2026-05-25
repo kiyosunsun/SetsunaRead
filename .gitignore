@@ -26,3 +26,8 @@ npm-debug.log*
 
 # Tauri
 src-tauri/target/
+
+# 本地插件生成文件
+.claude/
+.superpowers/
+docs/superpowers/
