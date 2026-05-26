@@ -16,7 +16,7 @@ const CornerOrnament = (props: { className: string }) => (
    页面组件 Props
    --------------------------------------------------------------------------- */
 interface PageProps {
-  /** 渲染的 HTML 内容字符串（可以是全文，浏览器自动分页） */
+  /** 渲染的 HTML 内容字符串 */
   content: string;
   /** 当前页码（1-indexed 用于显示） */
   pageNumber: number;
@@ -25,43 +25,42 @@ interface PageProps {
   className?: string;
   /** 阅读模式（用于控制书签指示器位置） */
   readingMode?: 'dual' | 'single' | 'scroll';
+  /** 章节标题（由分页算法预计算，优先使用） */
+  chapterTitle?: string;
 }
 
 /* ---------------------------------------------------------------------------
    页面组件
-   使用 CSS Multi-column 自动分页。
-   浏览器自动将内容分成多列，通过 transform 控制显示哪一列。
+   渲染预切分后的单页内容。
    --------------------------------------------------------------------------- */
-const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft, className, readingMode = 'single' }) => {
+const Page: React.FC<PageProps> = ({
+  content,
+  pageNumber,
+  isLeft,
+  className,
+  readingMode = 'single',
+  chapterTitle,
+}) => {
   const { paperBackground, fontSize, fontFamily, lineHeight, nightMode } = useSettingsStore();
-  const { pages, currentPage } = useBookStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   /* 检查当前页是否已添加书签 */
   const bookmarks = useBookmarkStore((state) => state.bookmarks);
   const bookId = useBookStore((state) => state.currentBook?.id);
+  const currentPage0 = useBookStore((state) => state.currentPage);
   const isBookmarked = useMemo(
-    () => bookmarks.some((b) => b.bookId === bookId && b.pageNumber === pageNumber),
-    [bookmarks, bookId, pageNumber],
+    () => bookmarks.some((b) => b.bookId === bookId && b.pageNumber === currentPage0 + 1),
+    [bookmarks, bookId, currentPage0],
   );
 
   const paperColor = PAPER_COLORS[paperBackground];
 
-  const pageHeaderText = useMemo(() => {
-    const active = pages[currentPage];
-    if (!active) return '';
+  /* 根据页面朝向确定书脊阴影类 */
+  const spineClass = isLeft ? 'book-spine-shadow-left' : 'book-spine-shadow-right';
 
-    if (typeof active.chapterTitle === 'string' && active.chapterTitle.trim()) {
-      return active.chapterTitle.trim();
-    }
-
-    if (typeof active.chapterIndex === 'number') {
-      return `第 ${active.chapterIndex + 1} 章`;
-    }
-
-    return '';
-  }, [currentPage, pages]);
+  /* 翻页卷角仅出现在右页 */
+  const curlClass = !isLeft ? 'page-curl' : '';
 
   /* 根据用户设置动态构建样式对象 */
   const pageStyle: React.CSSProperties = {
@@ -71,12 +70,6 @@ const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft, className, rea
     lineHeight,
     color: nightMode ? '#c4b89a' : '#2c2218',
   };
-
-  /* 根据页面朝向确定书脊阴影类 */
-  const spineClass = isLeft ? 'book-spine-shadow-left' : 'book-spine-shadow-right';
-
-  /* 翻页卷角仅出现在右页 */
-  const curlClass = !isLeft ? 'page-curl' : '';
 
   return (
     <div
@@ -252,19 +245,25 @@ const Page: React.FC<PageProps> = ({ content, pageNumber, isLeft, className, rea
       )}
 
       <div className="relative z-[3] page-pad page-grid">
+        {/* 页眉：显示章节标题 */}
         <div className="page-header">
           <div className="page-header-inner">
-            <span className="page-header-text">{pageHeaderText}</span>
+            <span className="page-header-text">
+              {chapterTitle ||
+                (content.slice(0, 50).includes('第') ? content.slice(0, 30) : '')}
+            </span>
           </div>
         </div>
 
-        {/* 页面正文：Worker 已完成分页，直接渲染纯文本 */}
+        {/* 页面正文 */}
         <div
           ref={contentRef}
           className="page-body"
-          dangerouslySetInnerHTML={{ __html: content }}
-        />
+        >
+          {content}
+        </div>
 
+        {/* 页脚：显示当前页码 */}
         <div className="page-footer">
           <div className="page-footer-inner">
             <span className="page-footer-text">{pageNumber}</span>

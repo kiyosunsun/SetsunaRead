@@ -7,7 +7,6 @@ import '../../styles/book.css';
 /* ---------------------------------------------------------------------------
    单页组件
    在屏幕中央显示单页，带键盘导航和柔和的投影深度。
-   作为更简洁的阅读模式设计。
    --------------------------------------------------------------------------- */
 const SinglePage: React.FC = () => {
   const { pages, currentPage, nextPage, prevPage } = useBookStore();
@@ -70,14 +69,12 @@ const SinglePage: React.FC = () => {
             pageNumber={pageData.pageNumber}
             isLeft={false}
             readingMode="single"
+            chapterTitle={pageData.chapterTitle}
           />
         ) : (
           <div className="w-full h-full bg-transparent" />
         )}
       </div>
-
-      {/* 页码指示器 */}
-      {/* A 方案：页码放进纸张内部页脚，外层不再叠加 */}
     </div>
   );
 };

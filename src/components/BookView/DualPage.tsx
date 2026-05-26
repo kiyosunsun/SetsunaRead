@@ -10,7 +10,6 @@ import '../../styles/book.css';
    双页组件
    以类似实体书打开的方式并排显示两页。
    包含键盘导航、3D 透视、书脊和书边厚度。
-   页面尺寸根据视口自适应，充分利用屏幕空间。
    --------------------------------------------------------------------------- */
 const FLIP_DURATION_MS = 450;
 
@@ -62,14 +61,12 @@ const DualPage: React.FC = () => {
       isAnimating.current = true;
 
       if (direction === 'next') {
-        // 右页翻转动画：旋转到峰值时（旧内容被隐藏），切换页面并清除动画
         setRightAnimClass('page-turn-right');
         window.setTimeout(() => {
           clearAnimation();
           goToPage(nextPageIndex);
         }, FLIP_DURATION_MS * 0.5);
       } else {
-        // 左页翻转动画：旋转到峰值时（旧内容被隐藏），切换页面并清除动画
         setLeftAnimClass('page-turn-left');
         window.setTimeout(() => {
           clearAnimation();
@@ -83,7 +80,6 @@ const DualPage: React.FC = () => {
   /* ---- 键盘导航 ---- */
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
-      /* 如果用户正在输入则忽略 */
       const tag = (e.target as HTMLElement).tagName;
       if (tag === 'INPUT' || tag === 'TEXTAREA') return;
 
@@ -141,7 +137,7 @@ const DualPage: React.FC = () => {
       style={{ perspective: '2000px' }}
       onClick={handleContainerClick}
     >
-      {/* 3D 容器，营造打开的书本视觉效果 */}
+      {/* 3D 容器 */}
       <div
         className="reader-book flex items-stretch relative"
         style={{
@@ -170,6 +166,7 @@ const DualPage: React.FC = () => {
                 content={leftPage.content}
                 pageNumber={leftPage.pageNumber}
                 isLeft={true}
+                chapterTitle={leftPage.chapterTitle}
               />
             ) : (
               <div className="w-full h-full bg-transparent" />
@@ -179,7 +176,7 @@ const DualPage: React.FC = () => {
           <div className={`page-flip-highlight left ${leftAnimClass ? 'is-visible' : ''}`} />
         </div>
 
-        {/* ---- 书脊中缝（装订凹槽） ---- */}
+        {/* ---- 书脊中缝 ---- */}
         <div
           className="relative flex-shrink-0"
           data-no-page-turn="true"
@@ -196,7 +193,6 @@ const DualPage: React.FC = () => {
             borderRadius: '2px',
           }}
         >
-          {/* 书脊高光线 */}
           <div
             className="absolute left-1/2 top-0 bottom-0 -translate-x-1/2"
             style={{
@@ -228,6 +224,7 @@ const DualPage: React.FC = () => {
                 content={rightPage.content}
                 pageNumber={rightPage.pageNumber}
                 isLeft={false}
+                chapterTitle={rightPage.chapterTitle}
               />
             ) : (
               <div className="w-full h-full bg-transparent" />
@@ -237,14 +234,13 @@ const DualPage: React.FC = () => {
           <div className={`page-flip-highlight right ${rightAnimClass ? 'is-visible' : ''}`} />
         </div>
 
-        {/* ---- 拟物书签（卡在右页顶部中间） ---- */}
+        {/* ---- 书签 ---- */}
         {isRightPageBookmarked && (
           <div
             data-no-page-turn="true"
             style={{
               position: 'absolute',
               top: '-12px',
-              /* 右页居中 = 左页 + 书脊 + 右页一半 */
               left: `calc(${pageSize.width}px + 20px + ${pageSize.width / 2}px)`,
               transform: 'translateX(-50%)',
               width: '88px',
@@ -252,7 +248,6 @@ const DualPage: React.FC = () => {
               pointerEvents: 'none',
             }}
           >
-            {/* 金属书签夹 */}
             <div
               style={{
                 width: '88px',
@@ -264,7 +259,6 @@ const DualPage: React.FC = () => {
                 boxShadow: '0 -3px 10px rgba(0,0,0,0.4), inset 0 1px 3px rgba(255,255,255,0.1), inset 0 -1px 2px rgba(0,0,0,0.3)',
               }}
             >
-              {/* 夹子高光线 */}
               <div
                 style={{
                   position: 'absolute',
@@ -277,8 +271,6 @@ const DualPage: React.FC = () => {
                 }}
               />
             </div>
-
-            {/* 书签主体 */}
             <div
               style={{
                 width: '82px',
@@ -290,7 +282,6 @@ const DualPage: React.FC = () => {
                 boxShadow: '0 8px 24px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 0 30px rgba(255,255,255,0.015)',
               }}
             >
-              {/* 光泽效果 */}
               <div
                 style={{
                   position: 'absolute',
@@ -303,8 +294,6 @@ const DualPage: React.FC = () => {
                   zIndex: 2,
                 }}
               />
-
-              {/* 竖排金字文字 */}
               <div
                 style={{
                   writingMode: 'vertical-rl',
@@ -320,8 +309,6 @@ const DualPage: React.FC = () => {
               >
                 书签
               </div>
-
-              {/* 紫蝴蝶 + 发光 */}
               <div style={{ textAlign: 'center', padding: '10px 0', fontSize: '44px', position: 'relative' }}>
                 <div
                   style={{
@@ -340,8 +327,6 @@ const DualPage: React.FC = () => {
                   🦋
                 </span>
               </div>
-
-              {/* 品牌区域 */}
               <div
                 style={{
                   padding: '12px 8px 16px',
@@ -372,7 +357,6 @@ const DualPage: React.FC = () => {
                 >
                   本地阅读
                 </div>
-                {/* 红色印章 */}
                 <div
                   style={{
                     display: 'inline-block',
@@ -402,25 +386,10 @@ const DualPage: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {/* 书签投射到页面上的阴影 */}
-            <div
-              style={{
-                position: 'absolute',
-                top: '10px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '100px',
-                height: '60px',
-                background: 'radial-gradient(ellipse at center top, rgba(0,0,0,0.15) 0%, transparent 70%)',
-                filter: 'blur(4px)',
-                zIndex: -1,
-              }}
-            />
           </div>
         )}
 
-        {/* ---- 书边厚度（右侧堆叠书页） ---- */}
+        {/* ---- 书边厚度 ---- */}
         <div
           className="absolute"
           data-no-page-turn="true"
@@ -437,9 +406,6 @@ const DualPage: React.FC = () => {
           }}
         />
       </div>
-
-      {/* ---- 页码指示器 ---- */}
-      {/* A 方案：每页页脚显示页码，因此这里不再额外叠加页码，避免不对齐/重复 */}
     </div>
   );
 };
