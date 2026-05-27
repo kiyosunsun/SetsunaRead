@@ -1,20 +1,30 @@
 import React from 'react';
 import { useBookStore } from '../../stores/bookStore';
 import { useSettingsStore } from '../../stores/settingsStore';
-import Page from './Page';
 import '../../styles/book.css';
 
 /* ---------------------------------------------------------------------------
    滚动视图组件
-   以垂直序列渲染所有页面，页码分隔各章节。
-   简单的滚动阅读模式，无需分页——整本书从上到下排列。
+
+   Multi-column 方案：
+   - 直接渲染完整内容，不需要分页
+   - 使用与 Page.tsx 一致的样式
+   - 页眉显示章节标题（从 chapterPageMap 查找）
+
+   以垂直滚动方式显示整本书内容。
    --------------------------------------------------------------------------- */
 const ScrollView: React.FC = () => {
-  const { pages } = useBookStore();
-  const { nightMode } = useSettingsStore();
+  const { content, chapters } = useBookStore();
+  const { nightMode, paperBackground, fontSize, fontFamily, lineHeight } = useSettingsStore();
+  const PAPER_COLORS: Record<string, string> = {
+    cream: '#f4ead5',
+    white: '#fefefe',
+    sepia: '#f0e6d2',
+  };
+  const paperColor = PAPER_COLORS[paperBackground] || PAPER_COLORS.cream;
 
   /* ---- 空状态 ---- */
-  if (pages.length === 0) {
+  if (!content) {
     return (
       <div className="flex items-center justify-center h-full w-full text-gray-400 select-none">
         No pages loaded. Open a book to start reading.
@@ -23,67 +33,59 @@ const ScrollView: React.FC = () => {
   }
 
   return (
-    <div className="reader-desk w-full h-full overflow-y-auto select-none" style={{ scrollBehavior: 'smooth' }}>
-      <div className="flex flex-col items-center gap-10 py-12">
-        {pages.map((page, index) => (
-          <React.Fragment key={page.pageNumber}>
-            {/* 单页带投影 */}
-            <div
-              className="reader-book relative overflow-hidden"
+    <div
+      className="reader-desk w-full h-full overflow-y-auto select-none"
+      style={{ scrollBehavior: 'smooth' }}
+    >
+      <div
+        className="mx-auto py-12 px-12"
+        style={{
+          maxWidth: '800px',
+          backgroundColor: nightMode ? '#1a1612' : paperColor,
+          color: nightMode ? '#c4b89a' : '#2c2218',
+          fontSize: `${fontSize}px`,
+          fontFamily: fontFamily,
+          lineHeight,
+          whiteSpace: 'pre-wrap',
+          wordWrap: 'break-word',
+          overflowWrap: 'break-word',
+          textAlign: 'justify',
+        }}
+      >
+        {/* 章节标题（如果有） */}
+        {chapters.length > 0 && chapters[0].title !== '全文' && (
+          <div
+            style={{
+              textAlign: 'center',
+              marginBottom: '2rem',
+              paddingBottom: '1rem',
+              borderBottom: `1px solid ${nightMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+            }}
+          >
+            <h1
               style={{
-                width: '480px',
-                height: '660px',
-                borderRadius: '4px',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(184,134,11,0.08)',
+                fontSize: '1.5em',
+                fontWeight: 600,
+                fontFamily: '"Noto Serif SC", serif',
+                letterSpacing: '0.05em',
               }}
             >
-              <Page
-                className="reader-paper"
-                content={page.content}
-                pageNumber={page.pageNumber}
-                isLeft={false}
-                readingMode="scroll"
-              />
-            </div>
+              {chapters[0].title}
+            </h1>
+          </div>
+        )}
 
-            {/* 页码分隔线 */}
-            {index < pages.length - 1 && (
-              <div
-                className="flex items-center gap-4 select-none"
-                style={{
-                  color: nightMode ? 'rgba(196,184,154,0.3)' : 'rgba(90,74,58,0.3)',
-                }}
-              >
-                <div
-                  className="h-px w-12"
-                  style={{
-                    background: nightMode
-                      ? 'linear-gradient(90deg, transparent, rgba(184,134,11,0.2), transparent)'
-                      : 'linear-gradient(90deg, transparent, rgba(184,134,11,0.2), transparent)',
-                  }}
-                />
-                <span className="text-xs tracking-widest uppercase" style={{ fontFamily: '"Noto Serif SC", serif' }}>
-                  {page.pageNumber}
-                </span>
-                <div
-                  className="h-px w-12"
-                  style={{
-                    background: nightMode
-                      ? 'linear-gradient(90deg, transparent, rgba(184,134,11,0.2), transparent)'
-                      : 'linear-gradient(90deg, transparent, rgba(184,134,11,0.2), transparent)',
-                  }}
-                />
-              </div>
-            )}
-          </React.Fragment>
-        ))}
+        {/* 完整内容 */}
+        {content}
 
         {/* 书末标记 */}
         <div
-          className="text-sm tracking-wide select-none py-4"
+          className="text-sm tracking-wide select-none py-8 text-center"
           style={{
             fontFamily: '"Noto Serif SC", serif',
             color: nightMode ? 'rgba(196,184,154,0.25)' : 'rgba(90,74,58,0.25)',
+            marginTop: '4rem',
+            borderTop: `1px solid ${nightMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
           }}
         >
           End of book

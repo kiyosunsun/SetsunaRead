@@ -118,6 +118,32 @@
   min-height: 0;
 }
 
+/**
+ * Multi-column 正文容器
+ *
+ * 原理：
+ * - column-width 让浏览器自动将内容分成多列
+ * - transform: translateX() 控制显示哪一列
+ * - overflow: hidden 隐藏其他列
+ *
+ * 优势：
+ * - 浏览器原生分页，100% 精确
+ * - 无留白、无溢出
+ * - 自动处理换行、字体、行高等
+ */
+.page-body-multicol {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  text-align: justify;
+  min-height: 0;
+  box-sizing: border-box;
+  /* Multi-column 布局由 inline style 控制 */
+}
+
 .page-footer {
   padding-bottom: 1.5rem;
   border-top: 1px solid rgba(0, 0, 0, 0.06);

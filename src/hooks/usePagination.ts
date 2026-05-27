@@ -4,7 +4,10 @@ import type { Page, PageConfig } from '@/types/book';
 /**
  * 分页 Hook - SetsunaRead
  *
- * 使用隐藏 DOM 测量容器，基于行数估算进行分页。
+ * @deprecated 已废弃。现在使用 Multi-column 方案（useBookParser + bookStore）。
+ * 保留此文件仅供参考，如需回退可恢复使用。
+ *
+ * 原方案：使用隐藏 DOM 测量容器，基于行数估算进行分页。
  * 比字符数二分查找更精确，避免中文排版导致的页面空白。
  *
  * 返回 pages、导航状态和控制方法。

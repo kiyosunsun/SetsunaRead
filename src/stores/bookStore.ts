@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Book, Page } from '../types/book';
+import type { Book, Chapter, ChapterPageMap, Page } from '../types/book';
+import { deleteCache } from '../lib/bookCache';
 
 type PersistedBook = Omit<Book, 'content'>;
 
@@ -9,7 +10,14 @@ interface BookState {
   currentBook: Book | null;
   currentPage: number;
   totalPages: number;
+  /** 预切分后的页面数据 */
   pages: Page[];
+  /** 完整书籍内容（用于搜索等） */
+  content: string;
+  /** 章节列表（含字符位置索引） */
+  chapters: Chapter[];
+  /** 章节页码映射（用于根据页码定位章节标题） */
+  chapterPageMap: ChapterPageMap[];
   /** 每本书的阅读进度 { bookId: pageNumber } */
   readingProgress: Record<string, number>;
 
@@ -17,10 +25,19 @@ interface BookState {
   removeBook: (bookId: string) => void;
   openBook: (book: Book) => void;
   closeBook: () => void;
-  setPages: (pages: Page[]) => void;
+  /** 设置分页数据 */
+  setBookData: (data: {
+    content: string;
+    chapters: Chapter[];
+    totalPages: number;
+    chapterPageMap: ChapterPageMap[];
+    pages: Page[];
+  }) => void;
   goToPage: (page: number) => void;
   nextPage: (step?: number) => void;
   prevPage: (step?: number) => void;
+  /** 根据当前页码获取章节标题 */
+  getCurrentChapterTitle: () => string | undefined;
 }
 
 export const useBookStore = create<BookState>()(
@@ -31,6 +48,9 @@ export const useBookStore = create<BookState>()(
       currentPage: 0,
       totalPages: 0,
       pages: [],
+      content: '',
+      chapters: [],
+      chapterPageMap: [],
       readingProgress: {},
 
       addBook: (book: Book) => {
@@ -44,6 +64,9 @@ export const useBookStore = create<BookState>()(
       },
 
       removeBook: (bookId: string) => {
+        // 异步清理 IndexedDB 缓存（不阻塞状态更新）
+        deleteCache(bookId).catch(() => {});
+
         set((state) => {
           const filtered = state.books.filter((b) => b.id !== bookId);
           // 同时删除该书的阅读进度
@@ -55,6 +78,9 @@ export const useBookStore = create<BookState>()(
               currentPage: 0,
               totalPages: 0,
               pages: [],
+              content: '',
+              chapters: [],
+              chapterPageMap: [],
               readingProgress: restProgress,
             };
           }
@@ -81,6 +107,9 @@ export const useBookStore = create<BookState>()(
             currentPage: 0,
             totalPages: 0,
             pages: [],
+            content: '',
+            chapters: [],
+            chapterPageMap: [],
             readingProgress: {
               ...readingProgress,
               [currentBook.id]: currentPage,
@@ -92,12 +121,24 @@ export const useBookStore = create<BookState>()(
             currentPage: 0,
             totalPages: 0,
             pages: [],
+            content: '',
+            chapters: [],
+            chapterPageMap: [],
           });
         }
       },
 
-      setPages: (pages: Page[]) => {
-        set({ pages, totalPages: pages.length });
+      /**
+       * 设置书籍分页数据
+       */
+      setBookData: (data) => {
+        set({
+          content: data.content,
+          chapters: data.chapters,
+          totalPages: data.totalPages,
+          chapterPageMap: data.chapterPageMap,
+          pages: data.pages,
+        });
       },
 
       goToPage: (page: number) => {
@@ -131,6 +172,19 @@ export const useBookStore = create<BookState>()(
             ...(currentBook ? { readingProgress: { ...readingProgress, [currentBook.id]: prev } } : {}),
           });
         }
+      },
+
+      /**
+       * 根据当前页码获取章节标题
+       */
+      getCurrentChapterTitle: () => {
+        const { currentPage, chapterPageMap } = get();
+        for (const chapter of chapterPageMap) {
+          if (currentPage >= chapter.startPage && currentPage <= chapter.endPage) {
+            return chapter.title;
+          }
+        }
+        return undefined;
       },
     }),
     {

@@ -5,19 +5,28 @@ import { useBookStore } from '../stores/bookStore';
    Search Result Type
    --------------------------------------------------------------------------- */
 export interface SearchResult {
+  /** 字符偏移量（在完整内容中的位置） */
+  charIndex: number;
+  /** 对应页码（0-indexed） */
   pageIndex: number;
+  /** 显示页码（1-indexed） */
   pageNumber: number;
+  /** 匹配在内容中的索引 */
   matchIndex: number;
+  /** 上下文文本 */
   context: string;
-  /** Character offset of the match start within the page content */
+  /** 匹配起始位置 */
   matchStart: number;
-  /** Length of the matched query within context */
+  /** 匹配长度 */
   matchLength: number;
 }
 
 /* ---------------------------------------------------------------------------
    useSearch Hook
-   Full-text search across all pages of the currently open book.
+
+   Multi-column 方案：
+   - 在完整 content 中搜索
+   - 根据字符偏移量计算对应页码
    --------------------------------------------------------------------------- */
 export function useSearch() {
   const [query, setQuery] = useState('');
@@ -45,37 +54,48 @@ export function useSearch() {
     setIsSearching(true);
 
     debounceRef.current = setTimeout(() => {
-      const { pages } = useBookStore.getState();
+      const { content, totalPages } = useBookStore.getState();
       const lowerQuery = searchQuery.toLowerCase();
       const found: SearchResult[] = [];
 
-      pages.forEach((page, pageIndex) => {
-        const lowerContent = page.content.toLowerCase();
-        let startIndex = 0;
+      if (!content) {
+        setResults([]);
+        setActiveIndex(-1);
+        setIsSearching(false);
+        return;
+      }
 
-        while (startIndex < lowerContent.length) {
-          const matchIndex = lowerContent.indexOf(lowerQuery, startIndex);
-          if (matchIndex === -1) break;
+      const lowerContent = content.toLowerCase();
+      let startIndex = 0;
 
-          // Extract context: ~40 chars before and after the match
-          const contextStart = Math.max(0, matchIndex - 40);
-          const contextEnd = Math.min(page.content.length, matchIndex + searchQuery.length + 40);
-          const context = (contextStart > 0 ? '...' : '') +
-            page.content.slice(contextStart, contextEnd) +
-            (contextEnd < page.content.length ? '...' : '');
+      while (startIndex < lowerContent.length) {
+        const matchIndex = lowerContent.indexOf(lowerQuery, startIndex);
+        if (matchIndex === -1) break;
 
-          found.push({
-            pageIndex,
-            pageNumber: page.pageNumber,
-            matchIndex,
-            context,
-            matchStart: matchIndex,
-            matchLength: searchQuery.length,
-          });
+        // 根据字符偏移量估算页码
+        const estimatedPage = totalPages > 0
+          ? Math.min(Math.floor((matchIndex / content.length) * totalPages), totalPages - 1)
+          : 0;
 
-          startIndex = matchIndex + 1;
-        }
-      });
+        // Extract context: ~40 chars before and after the match
+        const contextStart = Math.max(0, matchIndex - 40);
+        const contextEnd = Math.min(content.length, matchIndex + searchQuery.length + 40);
+        const contextText = (contextStart > 0 ? '...' : '') +
+          content.slice(contextStart, contextEnd) +
+          (contextEnd < content.length ? '...' : '');
+
+        found.push({
+          charIndex: matchIndex,
+          pageIndex: estimatedPage,
+          pageNumber: estimatedPage + 1,
+          matchIndex,
+          context: contextText,
+          matchStart: matchIndex - contextStart,
+          matchLength: searchQuery.length,
+        });
+
+        startIndex = matchIndex + 1;
+      }
 
       setResults(found);
       setActiveIndex(found.length > 0 ? 0 : -1);

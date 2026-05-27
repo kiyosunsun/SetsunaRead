@@ -15,13 +15,22 @@ import { useOnboarding } from './hooks/useOnboarding';
 import { usePageSize } from './hooks/usePageSize';
 import { useBookStore } from './stores/bookStore';
 import { useSettingsStore } from './stores/settingsStore';
-import { loadBookFile } from './lib/fileStorage';
+import { loadBookFile, getFileStats } from './lib/fileStorage';
+import { getCache, setCache, hashPageConfig } from './lib/bookCache';
 
 /* ---------------------------------------------------------------------------
    App - Main application shell for SetsunaRead.
-   Manages two top-level screens:
-     1. Bookshelf      - shown when no book is loaded (browse & import books)
-     2. Reading view   - shown when a book is loaded (reading mode + toolbar + panels)
+
+   ## Multi-column 分页方案
+
+   数据流：
+   1. useBookParser.loadFile() 解析文件，返回测量结果
+   2. App 调用 setBookData() 存储完整内容和分页信息
+   3. Page 组件用 Multi-column 渲染，transform 控制显示哪页
+
+   管理两个顶层视图：
+     1. Bookshelf      - 无书籍时显示（浏览和导入书籍）
+     2. Reading view   - 有书籍时显示（阅读模式 + 工具栏 + 面板）
    --------------------------------------------------------------------------- */
 function App() {
   /* ---- Reading mode ---- */
@@ -48,12 +57,12 @@ function App() {
   } = useOnboarding();
 
   /* ---- Core hooks ---- */
-  const { book, chapters, pages: workerPages, loadFile, loading, progress, cancel } = useBookParser();
+  const { book, chapters, loadFile, loading, progress, cancel } = useBookParser();
   const {
     addBook,
     openBook,
     closeBook,
-    setPages: storeSetPages,
+    setBookData,
   } = useBookStore();
   const currentBook = useBookStore((s) => s.currentBook);
   const { fontSize, lineHeight, nightMode } = useSettingsStore();
@@ -81,18 +90,6 @@ function App() {
     }
   }, [book, addBook, openBook]);
 
-  /* ---- Sync pages from parser result to store ---- */
-  useEffect(() => {
-    if (book && workerPages.length > 0) {
-      storeSetPages(workerPages);
-
-      const state = useBookStore.getState();
-      if (state.currentPage >= workerPages.length && workerPages.length > 0) {
-        useBookStore.setState({ currentPage: workerPages.length - 1 });
-      }
-    }
-  }, [book, workerPages, storeSetPages]);
-
   /* ---- Shared theme ---- */
   const theme = nightMode ? 'dark' : 'light';
 
@@ -103,11 +100,40 @@ function App() {
     const handleOpenBook = async (bookId: string) => {
       const found = useBookStore.getState().books.find((b) => b.id === bookId);
       if (found) {
-        // 从原始文件路径读取
         setImportingTitle(found.title);
+
+        // ---- 缓存检查 ----
+        const fileStats = await getFileStats(found.filePath);
+        const configHash = hashPageConfig(pageConfig);
+
+        if (fileStats) {
+          const cached = await getCache(bookId, fileStats.size, fileStats.mtime, configHash);
+          if (cached) {
+            // 缓存命中，直接使用，跳过 Worker + 分页
+            setBookData(cached);
+            // 必须调用 openBook 设置 currentBook 并恢复阅读进度
+            openBook({ ...found, content: cached.content });
+            return;
+          }
+        }
+
+        // ---- 缓存未命中，走原有管线 ----
         const buffer = await loadBookFile(found.filePath);
         if (buffer) {
-          await loadFile(buffer, `${found.title}.txt`, found.filePath, pageConfig);
+          const result = await loadFile(buffer, `${found.title}.txt`, found.filePath, pageConfig);
+          if (result) {
+            setBookData(result);
+            // 写入缓存（静默失败不影响正常流程）
+            if (fileStats) {
+              setCache(bookId, fileStats.size, fileStats.mtime, configHash, {
+                content: result.content,
+                chapters: result.chapters,
+                pages: result.pages,
+                chapterPageMap: result.chapterPageMap,
+                totalPages: result.totalPages,
+              });
+            }
+          }
         } else {
           alert('无法读取书籍文件，请确认文件是否存在，或重新导入。');
         }
@@ -121,7 +147,22 @@ function App() {
       }
 
       setImportingTitle(fileName.replace(/\.txt$/i, ''));
-      await loadFile(buffer, fileName, filePath, pageConfig);
+      const result = await loadFile(buffer, fileName, filePath, pageConfig);
+      if (result) {
+        setBookData(result);
+        // 首次导入也写入缓存，下次打开秒开
+        const fileStats = await getFileStats(filePath);
+        if (fileStats && result.book) {
+          const configHash = hashPageConfig(pageConfig);
+          setCache(result.book.id, fileStats.size, fileStats.mtime, configHash, {
+            content: result.content,
+            chapters: result.chapters,
+            pages: result.pages,
+            chapterPageMap: result.chapterPageMap,
+            totalPages: result.totalPages,
+          });
+        }
+      }
     };
 
     return (

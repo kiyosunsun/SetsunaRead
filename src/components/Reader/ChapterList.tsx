@@ -37,9 +37,8 @@ function estimateChapterPage(
    Highlights the currently visible chapter and allows clicking to jump.
    --------------------------------------------------------------------------- */
 const ChapterList: React.FC<ChapterListProps> = ({ isOpen, onClose, chapters }) => {
-  const { currentPage, totalPages, goToPage } = useBookStore();
+  const { currentPage, totalPages, goToPage, content: bookContent } = useBookStore();
   const { nightMode } = useSettingsStore();
-  const bookContent = useBookStore((state) => state.currentBook?.content ?? '');
 
   /* ---- Determine which chapter the user is currently reading ---- */
   const currentChapterIdx = useMemo(() => {

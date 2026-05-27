@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 export const PAPER_COLORS = {
   default: '#f8f2e6',
@@ -36,19 +37,35 @@ interface SettingsState {
   toggleNightMode: () => void;
 }
 
-export const useSettingsStore = create<SettingsState>((set) => ({
-  paperBackground: 'default',
-  fontSize: 18,
-  fontFamily: 'serif',
-  lineHeight: 1.8,
-  nightMode: false,
-  flipAnimation: 'flip',
+export const useSettingsStore = create<SettingsState>()(
+  persist(
+    (set) => ({
+      paperBackground: 'default',
+      fontSize: 18,
+      fontFamily: 'serif',
+      lineHeight: 1.8,
+      nightMode: false,
+      flipAnimation: 'flip',
 
-  updateSetting: (key, value) => {
-    set({ [key]: value });
-  },
+      updateSetting: (key, value) => {
+        set({ [key]: value });
+      },
 
-  toggleNightMode: () => {
-    set((state) => ({ nightMode: !state.nightMode }));
-  },
-}));
+      toggleNightMode: () => {
+        set((state) => ({ nightMode: !state.nightMode }));
+      },
+    }),
+    {
+      name: 'setsuna-settings-store',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        paperBackground: state.paperBackground,
+        fontSize: state.fontSize,
+        fontFamily: state.fontFamily,
+        lineHeight: state.lineHeight,
+        nightMode: state.nightMode,
+        flipAnimation: state.flipAnimation,
+      }),
+    },
+  ),
+);
