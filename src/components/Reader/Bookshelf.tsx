@@ -15,26 +15,26 @@ interface BookshelfProps {
 }
 
 /* ---------------------------------------------------------------------------
-   书脊颜色方案
+   封面颜色方案（日间 + 夜间）
    --------------------------------------------------------------------------- */
-const SPINE_COLORS = [
-  { name: 'wine', bg: 'linear-gradient(135deg, #8b2500 0%, #a0522d 50%, #8b2500 100%)' },
-  { name: 'forest', bg: 'linear-gradient(135deg, #2d4a2e 0%, #3d6b3e 50%, #2d4a2e 100%)' },
-  { name: 'navy', bg: 'linear-gradient(135deg, #1a2744 0%, #2a3d5e 50%, #1a2744 100%)' },
-  { name: 'plum', bg: 'linear-gradient(135deg, #4a2040 0%, #6a3060 50%, #4a2040 100%)' },
-  { name: 'amber', bg: 'linear-gradient(135deg, #8b6914 0%, #a0792d 50%, #8b6914 100%)' },
-  { name: 'charcoal', bg: 'linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 50%, #2a2a2a 100%)' },
+const BOOK_COLORS = [
+  { day: 'linear-gradient(145deg, #8b2500 0%, #a0522d 40%, #8b2500 100%)', night: 'linear-gradient(145deg, #5a1800 0%, #6e3820 40%, #5a1800 100%)' },
+  { day: 'linear-gradient(145deg, #2d4a2e 0%, #3d6b3e 40%, #2d4a2e 100%)', night: 'linear-gradient(145deg, #1e3020 0%, #2a4828 40%, #1e3020 100%)' },
+  { day: 'linear-gradient(145deg, #1a2744 0%, #2a3d5e 40%, #1a2744 100%)', night: 'linear-gradient(145deg, #111a2e 0%, #1c2a40 40%, #111a2e 100%)' },
+  { day: 'linear-gradient(145deg, #4a2040 0%, #6a3060 40%, #4a2040 100%)', night: 'linear-gradient(145deg, #301428 0%, #442040 40%, #301428 100%)' },
+  { day: 'linear-gradient(145deg, #8b6914 0%, #a0792d 40%, #8b6914 100%)', night: 'linear-gradient(145deg, #5c4610 0%, #6e5220 40%, #5c4610 100%)' },
+  { day: 'linear-gradient(145deg, #2a2a2a 0%, #3a3a3a 40%, #2a2a2a 100%)', night: 'linear-gradient(145deg, #1a1a1a 0%, #252525 40%, #1a1a1a 100%)' },
 ];
 
 /* ---------------------------------------------------------------------------
-   根据书籍 ID 生成稳定的书脊颜色索引
+   根据书籍 ID 生成稳定的封面颜色索引
    --------------------------------------------------------------------------- */
-function getSpineColorIndex(bookId: string): number {
+function getBookColorIndex(bookId: string): number {
   let hash = 0;
   for (let i = 0; i < bookId.length; i++) {
     hash = (hash * 31 + bookId.charCodeAt(i)) | 0;
   }
-  return Math.abs(hash) % SPINE_COLORS.length;
+  return Math.abs(hash) % BOOK_COLORS.length;
 }
 
 /* ---------------------------------------------------------------------------
@@ -161,21 +161,21 @@ function OpenBookIcon({ color }: { color: string }) {
 }
 
 /* ---------------------------------------------------------------------------
-   单个书脊组件
+   单个平放书籍封面组件
    --------------------------------------------------------------------------- */
-interface BookSpineProps {
+interface BookCoverProps {
   bookId: string;
   title: string;
   lastRead: number;
   size: number;
+  nightMode: boolean;
   onClick: () => void;
   onDelete: (e: React.MouseEvent) => void;
 }
 
-function BookSpine({ bookId, title, lastRead, size, onClick, onDelete }: BookSpineProps) {
-  const colorIndex = getSpineColorIndex(bookId);
-  const spine = SPINE_COLORS[colorIndex];
-  const bookHeight = 180 + (title.length % 5) * 8; // 书脊高度随标题长度微调
+function BookCover({ bookId, title, lastRead, size, nightMode, onClick, onDelete }: BookCoverProps) {
+  const colorIndex = getBookColorIndex(bookId);
+  const coverBg = nightMode ? BOOK_COLORS[colorIndex].night : BOOK_COLORS[colorIndex].day;
 
   return (
     <div
@@ -190,63 +190,145 @@ function BookSpine({ bookId, title, lastRead, size, onClick, onDelete }: BookSpi
       }}
       aria-label={`打开书籍：${title}`}
       title={`${title}\n${formatSize(size)} · ${formatLastRead(lastRead)}`}
-      className="book-spine-item group/spine"
+      className="group/cover"
       style={{
-        width: 48,
-        height: bookHeight,
-        borderRadius: '3px 4px 4px 3px',
         cursor: 'pointer',
         position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: spine.bg,
-        boxShadow: `
-          2px 2px 8px rgba(0,0,0,0.3),
-          inset 2px 0 0 rgba(255,255,255,0.15),
-          inset -1px 0 0 rgba(0,0,0,0.2)
-        `,
-        flexShrink: 0,
+        transition: 'transform 0.35s ease, box-shadow 0.35s ease',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-8px) rotate(-1deg)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0) rotate(0deg)';
       }}
     >
-      {/* 书脊左侧高光线（凹槽） */}
+      {/* 封面主体 */}
       <div
         style={{
-          position: 'absolute',
-          left: 3,
-          top: 8,
-          bottom: 8,
-          width: 1,
-          background: 'rgba(255,255,255,0.2)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* 竖排书名 */}
-      <div
-        style={{
-          writingMode: 'vertical-rl',
-          textOrientation: 'mixed',
-          fontFamily: "'Noto Serif SC', serif",
-          fontSize: 12,
-          fontWeight: 600,
-          letterSpacing: 3,
-          color: 'rgba(255,255,255,0.9)',
-          textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-          maxHeight: bookHeight - 32,
+          width: 140,
+          height: 190,
+          borderRadius: '4px 10px 10px 4px',
+          position: 'relative',
           overflow: 'hidden',
-          lineHeight: 1.6,
-          padding: '4px 0',
+          background: coverBg,
+          boxShadow: `
+            3px 4px 12px rgba(0,0,0,0.35),
+            -1px 0 3px rgba(0,0,0,0.15),
+            inset -2px 0 4px rgba(0,0,0,0.1),
+            inset 2px 0 4px rgba(255,255,255,0.08)
+          `,
         }}
       >
-        {title}
+        {/* 封面纹理叠加 */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: `
+              repeating-linear-gradient(
+                45deg,
+                transparent 0px,
+                transparent 2px,
+                rgba(255,255,255,0.02) 2px,
+                rgba(255,255,255,0.02) 4px
+              )
+            `,
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+
+        {/* 书脊（封面左侧窄条） */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 12,
+            background: `linear-gradient(90deg,
+              rgba(0,0,0,0.25) 0%,
+              rgba(0,0,0,0.08) 40%,
+              rgba(255,255,255,0.05) 60%,
+              transparent 100%
+            )`,
+            zIndex: 2,
+          }}
+        />
+
+        {/* 封面内容区 */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px 14px 16px 20px',
+            zIndex: 1,
+          }}
+        >
+          {/* 顶部装饰线 */}
+          <div style={{ width: 50, height: 1, background: 'rgba(255,255,255,0.35)', marginBottom: 14 }} />
+
+          {/* 书名 */}
+          <div
+            style={{
+              fontFamily: "'Noto Serif SC', serif",
+              fontSize: 18,
+              fontWeight: 700,
+              color: 'rgba(255,255,255,0.95)',
+              textShadow: '0 1px 3px rgba(0,0,0,0.4)',
+              textAlign: 'center',
+              lineHeight: 1.5,
+              letterSpacing: 2,
+              maxHeight: 110,
+              overflow: 'hidden',
+            }}
+          >
+            {title}
+          </div>
+
+          {/* 底部装饰线 */}
+          <div style={{ width: 30, height: 1, background: 'rgba(255,255,255,0.25)', marginTop: 14 }} />
+        </div>
+
+        {/* 书页厚度（底部露出的纸张） */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: -3,
+            left: 8,
+            right: 2,
+            height: 6,
+            background: 'linear-gradient(180deg, #f5efe3, #e8dcc4)',
+            borderRadius: '0 0 2px 2px',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.15)',
+          }}
+        />
+      </div>
+
+      {/* 文件信息（hover 时显示） */}
+      <div
+        className="opacity-0 group-hover/cover:opacity-100"
+        style={{
+          textAlign: 'center',
+          marginTop: 8,
+          fontSize: 11,
+          color: nightMode ? 'rgba(212,197,169,0.5)' : '#8a7a6a',
+          transition: 'opacity 0.2s',
+          lineHeight: 1.4,
+        }}
+      >
+        {formatSize(size)} · {formatLastRead(lastRead)}
       </div>
 
       {/* 删除按钮（hover 时显示） */}
       <button
         onClick={onDelete}
-        className="opacity-0 group-hover/spine:opacity-100"
+        className="opacity-0 group-hover/cover:opacity-100"
         style={{
           position: 'absolute',
           top: -8,
@@ -264,7 +346,7 @@ function BookSpine({ bookId, title, lastRead, size, onClick, onDelete }: BookSpi
           cursor: 'pointer',
           boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
           transition: 'opacity 0.2s',
-          zIndex: 10,
+          zIndex: 20,
           lineHeight: 1,
           padding: 0,
         }}
@@ -279,7 +361,7 @@ function BookSpine({ bookId, title, lastRead, size, onClick, onDelete }: BookSpi
 
 /* ---------------------------------------------------------------------------
    书架组件
-   木质书脊风格的书架展示
+   平放书籍封面风格的书架展示
    --------------------------------------------------------------------------- */
 const Bookshelf: React.FC<BookshelfProps> = ({ onOpenBook, onImportBook }) => {
   const books = useBookStore((s) => s.books);
@@ -573,30 +655,29 @@ const Bookshelf: React.FC<BookshelfProps> = ({ onOpenBook, onImportBook }) => {
             ...nightShelfBoard,
             position: 'relative',
             borderRadius: 8,
-            padding: '28px 24px 20px',
+            padding: '36px 30px 28px',
           }}
         >
           <ShelfShadow />
 
-          {/* 书脊行 */}
+          {/* 书籍网格：4列固定宽度，整体居中，行内靠左 */}
           <div
             style={{
-              display: 'flex',
-              gap: 16,
-              alignItems: 'flex-end',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 140px)',
+              gap: '28px 24px',
               justifyContent: 'center',
               minHeight: 200,
-              paddingBottom: 8,
-              flexWrap: 'wrap',
             }}
           >
             {books.map((book) => (
-              <BookSpine
+              <BookCover
                 key={book.id}
                 bookId={book.id}
                 title={book.title}
                 lastRead={book.lastRead}
                 size={book.size}
+                nightMode={nightMode}
                 onClick={() => onOpenBook(book.id)}
                 onDelete={(e) => handleDelete(e, book.id, book.title)}
               />

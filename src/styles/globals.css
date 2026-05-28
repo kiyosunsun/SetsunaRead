@@ -74,18 +74,4 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* ---------------------------------------------------------------------------
-   书脊悬停效果
-   木质书架中书脊微微升起的交互反馈
-   --------------------------------------------------------------------------- */
-.book-spine-item {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
 
-.book-spine-item:hover {
-  transform: translateY(-12px);
-  box-shadow:
-    4px 8px 20px rgba(0,0,0,0.4),
-    inset 2px 0 0 rgba(255,255,255,0.2),
-    inset -1px 0 0 rgba(0,0,0,0.2);
-}
