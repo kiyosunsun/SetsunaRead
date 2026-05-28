@@ -5,6 +5,10 @@
 
 ## v0.7.0 — 2026-05-28
 
+- `c55281a` 新增 书架改为平放书籍封面风格，禁用窗口缩放
+- `a8362b7` 新增 更新应用图标，新增图标生成工具
+- `cbcdfe6` 修复 修复书签指示器在双页模式下不显示及跨页误显问题
+- `ff3d360` 文档 新增 README、CHANGELOG 及自动更新 hook 脚本
 - `778237c` 新增 书籍解析结果 IndexedDB 缓存，二次打开秒开
 - `14be255` 修复 页眉章节标题显示不准确问题
 
@@ -61,9 +65,3 @@
 - `d81620b` 新增 install core dependencies (zustand, chardet, page-flip)
 - `602e919` 新增 configure Tailwind CSS v3 + shadcn/ui utilities
 - `23d02d6` 新增 initialize Tauri + React + Vite project
-
-## 2026-05-28
-
-- `ff3d360` 文档 新增 README、CHANGELOG 及自动更新 hook 脚本
-- `cbcdfe6` 修复 修复书签指示器在双页模式下不显示及跨页误显问题
-- `a8362b7` 新增 更新应用图标，新增图标生成工具
