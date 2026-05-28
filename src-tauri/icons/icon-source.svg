@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a2118"/>
+      <stop offset="100%" stop-color="#1a1410"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d4a843"/>
+      <stop offset="100%" stop-color="#b8860b"/>
+    </linearGradient>
+    <linearGradient id="page" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#faf5eb"/>
+      <stop offset="100%" stop-color="#efe5d0"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="12" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="1024" height="1024" rx="220" ry="220" fill="url(#bg)"/>
+  <rect x="40" y="40" width="944" height="944" rx="190" ry="190"
+        fill="none" stroke="url(#gold)" stroke-width="2" opacity="0.2"/>
+
+  <!-- ===== 打开的书 ===== -->
+  <g filter="url(#shadow)" transform="translate(512,430)">
+
+    <!-- 左页 -->
+    <rect x="-230" y="-250" width="220" height="460" rx="4" fill="url(#page)"/>
+    <!-- 右页 -->
+    <rect x="10" y="-250" width="220" height="460" rx="4" fill="url(#page)"/>
+
+    <!-- 左页文字 -->
+    <g opacity="0.1" fill="#8b7355">
+      <rect x="-200" y="-195" width="160" height="3" rx="1"/>
+      <rect x="-200" y="-170" width="130" height="3" rx="1"/>
+      <rect x="-200" y="-145" width="150" height="3" rx="1"/>
+      <rect x="-200" y="-120" width="115" height="3" rx="1"/>
+      <rect x="-200" y="-95" width="145" height="3" rx="1"/>
+      <rect x="-200" y="-70" width="125" height="3" rx="1"/>
+      <rect x="-200" y="-45" width="155" height="3" rx="1"/>
+      <rect x="-200" y="-20" width="110" height="3" rx="1"/>
+      <rect x="-200" y="5" width="140" height="3" rx="1"/>
+      <rect x="-200" y="30" width="120" height="3" rx="1"/>
+      <rect x="-200" y="55" width="150" height="3" rx="1"/>
+      <rect x="-200" y="80" width="105" height="3" rx="1"/>
+      <rect x="-200" y="105" width="135" height="3" rx="1"/>
+      <rect x="-200" y="130" width="120" height="3" rx="1"/>
+      <rect x="-200" y="155" width="145" height="3" rx="1"/>
+    </g>
+
+    <!-- 右页文字 -->
+    <g opacity="0.1" fill="#8b7355">
+      <rect x="40" y="-195" width="160" height="3" rx="1"/>
+      <rect x="40" y="-170" width="120" height="3" rx="1"/>
+      <rect x="40" y="-145" width="145" height="3" rx="1"/>
+      <rect x="40" y="-120" width="110" height="3" rx="1"/>
+      <rect x="40" y="-95" width="150" height="3" rx="1"/>
+      <rect x="40" y="-70" width="125" height="3" rx="1"/>
+      <rect x="40" y="-45" width="140" height="3" rx="1"/>
+      <rect x="40" y="-20" width="155" height="3" rx="1"/>
+      <rect x="40" y="5" width="105" height="3" rx="1"/>
+      <rect x="40" y="30" width="135" height="3" rx="1"/>
+      <rect x="40" y="55" width="120" height="3" rx="1"/>
+      <rect x="40" y="80" width="150" height="3" rx="1"/>
+      <rect x="40" y="105" width="115" height="3" rx="1"/>
+      <rect x="40" y="130" width="130" height="3" rx="1"/>
+      <rect x="40" y="155" width="145" height="3" rx="1"/>
+    </g>
+
+    <!-- 书脊阴影 -->
+    <rect x="-4" y="-250" width="8" height="460" fill="rgba(0,0,0,0.12)"/>
+
+    <!-- 书签 -->
+    <rect x="-2" y="-268" width="4" height="30" rx="1" fill="url(#gold)" opacity="0.85"/>
+
+  </g>
+
+  <!-- 品牌 -->
+  <text x="512" y="830" text-anchor="middle"
+        font-family="'Playfair Display', 'Georgia', serif"
+        font-size="56" font-weight="600" letter-spacing="8"
+        fill="url(#gold)">Setsuna</text>
+
+</svg>
