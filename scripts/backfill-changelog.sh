@@ -48,9 +48,12 @@ git log --no-merges --reverse --format="%h|%s|%ai" | while IFS='|' read -r HASH 
     # 新的日期段
     if [ "$DATE" != "$CURRENT_DATE" ]; then
         CURRENT_DATE="$DATE"
-        echo "" >> "$CHANGELOG"
-        echo "## ${DATE}" >> "$CHANGELOG"
-        echo "" >> "$CHANGELOG"
+        # 检查该日期是否已存在（兼容 ## DATE 和 ## vX.Y.Z — DATE 两种格式）
+        if ! grep -q "## .*${DATE}" "$CHANGELOG"; then
+            echo "" >> "$CHANGELOG"
+            echo "## ${DATE}" >> "$CHANGELOG"
+            echo "" >> "$CHANGELOG"
+        fi
     fi
 
     # 写入条目
