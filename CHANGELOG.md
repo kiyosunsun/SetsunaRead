@@ -61,3 +61,7 @@
 - `d81620b` 新增 install core dependencies (zustand, chardet, page-flip)
 - `602e919` 新增 configure Tailwind CSS v3 + shadcn/ui utilities
 - `23d02d6` 新增 initialize Tauri + React + Vite project
+
+## 2026-05-28
+
+- `ff3d360` 文档 新增 README、CHANGELOG 及自动更新 hook 脚本

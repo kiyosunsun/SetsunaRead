@@ -67,6 +67,7 @@ const SinglePage: React.FC = () => {
             className="reader-paper"
             content={pageData.content}
             pageNumber={pageData.pageNumber}
+            pageIndex={currentPage}
             isLeft={false}
             readingMode="single"
             chapterTitle={pageData.chapterTitle}

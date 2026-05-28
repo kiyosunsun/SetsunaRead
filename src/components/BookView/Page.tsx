@@ -20,6 +20,8 @@ interface PageProps {
   content: string;
   /** 当前页码（1-indexed 用于显示） */
   pageNumber: number;
+  /** 页面在 pages 数组中的索引（0-indexed，用于书签匹配） */
+  pageIndex: number;
   /** 是否为双页展开中的左页 */
   isLeft: boolean;
   className?: string;
@@ -36,22 +38,22 @@ interface PageProps {
 const Page: React.FC<PageProps> = ({
   content,
   pageNumber,
+  pageIndex,
   isLeft,
   className,
-  readingMode = 'single',
+  readingMode: _readingMode = 'single',
   chapterTitle,
 }) => {
   const { paperBackground, fontSize, fontFamily, lineHeight, nightMode } = useSettingsStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  /* 检查当前页是否已添加书签 */
+  /* 检查当前页是否已添加书签（用 pageIndex 匹配，而非全局 currentPage） */
   const bookmarks = useBookmarkStore((state) => state.bookmarks);
   const bookId = useBookStore((state) => state.currentBook?.id);
-  const currentPage0 = useBookStore((state) => state.currentPage);
   const isBookmarked = useMemo(
-    () => bookmarks.some((b) => b.bookId === bookId && b.pageNumber === currentPage0 + 1),
-    [bookmarks, bookId, currentPage0],
+    () => bookmarks.some((b) => b.bookId === bookId && b.pageNumber === pageIndex),
+    [bookmarks, bookId, pageIndex],
   );
 
   const paperColor = PAPER_COLORS[paperBackground];
@@ -82,8 +84,8 @@ const Page: React.FC<PageProps> = ({
       <CornerOrnament className="reader-ornament bl" />
       <CornerOrnament className="reader-ornament br" />
 
-      {/* ---- 拟物书签（单页/滚动模式：右上角） ---- */}
-      {isBookmarked && readingMode !== 'dual' && (
+      {/* ---- 拟物书签（右上角） ---- */}
+      {isBookmarked && (
         <div
           style={{
             position: 'absolute',
